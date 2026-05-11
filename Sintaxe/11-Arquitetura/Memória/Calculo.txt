@@ -1,0 +1,33 @@
+"use strict";
+
+/*
+Quando você compila seu código, o compilador pode:
+- examinar os tipos de dados primitivos
+- calcular antecipadamente a quantidade de memória necessária
+
+Essa memória é alocada para o programa na Call Stack.
+
+O local onde essas variáveis são alocadas é chamado de *pilha* (stack) porque:
+- conforme funções são chamadas, novos “frames” entram no topo da pilha
+- quando as funções terminam, esses frames são removidos em ordem LIFO
+  (Last-In, First-Out: o último a entrar é o primeiro a sair)
+
+Exemplo:
+*/
+
+console.clear();
+
+// O compilador pode ver imediatamente que o código requer 4 + 4 × 4 + 8 = 28 bytes.
+
+const name = 'John'; // 4 bytes
+const arr = ['John', 'Jane', 'Jim', 'Jill']; // array of 4 elements, each 4 bytes
+const age = 30; // 8 bytes
+
+
+/*
+No exemplo acima, o compilador conhece o endereço de memória exato de cada variável.
+
+Na prática, quando escrevemos em uma variável (ex.: `name`), isso vira algo como:
+- "escreva no endereço de memória 4127963"
+internamente.
+*/

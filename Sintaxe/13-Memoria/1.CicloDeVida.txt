@@ -1,0 +1,28 @@
+/**
+ * Ciclo de vida da memória
+ *
+ * Não importa qual linguagem de programação você esteja usando, o ciclo de vida
+ * da memória é praticamente sempre o mesmo:
+ *
+ * ------------------------------------------------------------------------------
+ * 1. Allocate memory (Alocar memória)
+ * ------------------------------------------------------------------------------
+ * A memória é alocada pelo sistema operacional, o que permite ao seu programa
+ * usá-la. Em linguagens de baixo nível (por exemplo, C) esta é uma operação
+ * explícita que você, como desenvolvedor, deve manipular. Em linguagens de alto
+ * nível, no entanto, isso é feito para você.
+ *
+ * ------------------------------------------------------------------------------
+ * 2. Use memory (Usar memória)
+ * ------------------------------------------------------------------------------
+ * Este é o momento em que seu programa realmente faz uso da memória alocada
+ * anteriormente. As operações de leitura e gravação estão ocorrendo enquanto você
+ * está usando as variáveis alocadas em seu código.
+ *
+ * ------------------------------------------------------------------------------
+ * 3. Release memory (Liberar memória)
+ * ------------------------------------------------------------------------------
+ * É a hora de liberar toda a memória de que você não precisa para que ela fique
+ * livre e disponível novamente. Tal como na operação de alocar memória, esta é
+ * explícita em linguagens de baixo nível.
+ */

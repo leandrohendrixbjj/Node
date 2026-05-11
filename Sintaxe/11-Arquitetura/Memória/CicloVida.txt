@@ -1,0 +1,34 @@
+CICLO DE VIDA DA MEMÓRIA
+======================
+
+Não importa qual linguagem de programação você esteja usando, o ciclo de vida da memória é praticamente sempre o mesmo.
+
+Ideia central
+------------
+A aplicação (direta ou indiretamente) precisa:
+- reservar (alocar) memória para dados
+- usar esses dados durante a execução
+- liberar a memória quando ela não for mais necessária
+
+Fluxo (resumo)
+--------------
+
+  +------------------+       +-------------+       +-----------------+
+  |  Allocate memory |  -->  |  Use memory |  -->  |  Release memory |
+  +------------------+       +-------------+       +-----------------+
+
+Passos
+------
+1) Allocate memory (Alocar memória)
+   - Reservar espaço para variáveis/objetos/estruturas.
+
+2) Use memory (Usar memória)
+   - Ler/modificar dados e executar operações durante o programa.
+
+3) Release memory (Liberar memória)
+   - Devolver o espaço para o sistema/runtime (manual ou automaticamente via GC).
+
+Figura (print)
+--------------
+Print anexado com o mesmo fluxo:
+/home/hendrix/.cursor/projects/home-hendrix-estudos-node/assets/image-1e247c85-93ed-48e0-9cbf-55810c146ec4.png

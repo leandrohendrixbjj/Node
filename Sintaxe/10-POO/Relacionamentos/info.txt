@@ -1,0 +1,36 @@
+╔════════════════════════════════════════════════════════════════════════════╗
+║          POO — Relacionamentos entre classes (visão resumida)              ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+  Três formas comuns de ligar classes: herança, composição e agregação.
+  Todas podem ser descritas como "tem um" em linguagem coloquial, mas a
+  força do vínculo e o significado exato mudam.
+
+
+┌────────────────┬──────────────────┬──────────────────┬─────────────────────────────────────────┐
+│ Relacionamento │ Tipo (relação)   │ Força do vínculo │ Exemplo                                 │
+├────────────────┼──────────────────┼──────────────────┼─────────────────────────────────────────┤
+│ Herança        │ Is-a  (é um)     │ Muito forte      │ Um Poodle é um Cachorro.                │
+├────────────────┼──────────────────┼──────────────────┼─────────────────────────────────────────┤
+│ Composição     │ Has-a (tem um)   │ Forte            │ Uma página faz parte de um livro.       │
+├────────────────┼──────────────────┼──────────────────┼─────────────────────────────────────────┤
+│ Agregação      │ Has-a (tem um)   │ Fraco / moderado │ Um aluno está em uma turma.             │
+└────────────────┴──────────────────┴──────────────────┴─────────────────────────────────────────┘
+
+
+  Herança
+  ───────
+  Subclasse especializa a superclasse; o objeto "é" do tipo da base.
+  Mudanças na classe pai afetam diretamente os filhos (acoplamento forte).
+
+
+  Composição
+  ──────────
+  O todo possui partes que não existem sem o todo, ou cuja vida útil está
+  atrelada ao objeto composto (parte "pertence" ao agregado de forma rígida).
+
+
+  Agregação
+  ─────────
+  Associação "tem um" mais solta: a parte pode existir independentemente ou
+  ser compartilhada; o vínculo é mais fraco que na composição.

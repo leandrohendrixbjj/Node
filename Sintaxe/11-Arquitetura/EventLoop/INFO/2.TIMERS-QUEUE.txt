@@ -1,0 +1,69 @@
+
+╔══════════════════════════════════════════════════════════════════╗
+║  Event Loop — Fase de TIMERS (setTimeout / setInterval)          ║
+╚══════════════════════════════════════════════════════════════════╝
+
+┌─ O que são TIMERS? ──────────────────────────────────────────────┐
+│                                                                  │
+│  TIMERS são tarefas agendadas para rodar *depois* de um tempo     │
+│  mínimo (delay). Elas NÃO rodam “na hora exata” — entram na fila  │
+│  quando o delay expira e o Event Loop estiver disponível.         │
+│                                                                  │
+│  Principais APIs:                                                │
+│    • setTimeout(fn, delay)   → executa 1 vez (após o delay)       │
+│    • setInterval(fn, delay)  → executa repetidamente             │
+│                                                                  │
+│  👉 Importante: o tempo é *mínimo*. Se o loop estiver ocupado,    │
+│     o callback espera na fila até a fase de timers conseguir      │
+│     processá-lo.                                                 │
+│                                                                  │
+└──────────────────────────────────────────────────────────────────┘
+
+┌─ O fluxo (do agendamento até executar) ──────────────────────────┐
+│                                                                  │
+│        V8 (chama setTimeout)                                      │
+│                │                                                 │
+│                ▼                                                 │
+│        Registra timer (Node/libuv)                                │
+│                │                                                 │
+│                ▼                                                 │
+│        ⏱️ espera o delay (fora da fila)                           │
+│                │                                                 │
+│                ▼                                                 │
+│        TIMERS QUEUE (callback pronto)                             │
+│                │                                                 │
+│                ▼                                                 │
+│        EVENT LOOP (fase TIMERS consome a fila)                    │
+│                │                                                 │
+│                ▼                                                 │
+│        CALL STACK (executa)                                       │
+│                                                                  │
+└──────────────────────────────────────────────────────────────────┘
+
+┌─ Exemplo realista: atraso por BLOQUEIO (CPU / while) ─────────────┐
+│                                                                  │
+│  Mesmo com delay de 1 segundo, se o JS bloquear por 3 segundos,   │
+│  o callback só vai rodar depois do bloqueio terminar.             │
+│                                                                  │
+│  Exemplo:                                                        │
+│                                                                  │
+│    setTimeout(() => {                                             │
+│      console.log('Timer');                                        │
+│    }, 1000);                                                      │
+│                                                                  │
+│    // Bloqueia por ~3 segundos                                    │
+│    const start = Date.now();                                      │
+│    while (Date.now() - start < 3000) {}                           │
+│                                                                  │
+│    console.log('Fim');                                            │
+│                                                                  │
+│  Saída esperada (aproximada):                                     │
+│    Fim                                                           │
+│    Timer                                                         │
+│                                                                  │
+│  Por quê?                                                         │
+│    • O Event Loop ficou ocupado (Call Stack nunca esvaziou)       │
+│    • O timer expirou e ficou pronto, mas não conseguiu executar   │
+│      até a fase de timers ter chance de rodar                     │
+│                                                                  │
+└──────────────────────────────────────────────────────────────────┘
