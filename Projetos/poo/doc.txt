@@ -1,0 +1,57 @@
+Você tem acesso ao livro: O PROCESSO DE PENSAMENTO ORIENTADO A OBJETOS — Matt Weisfeld e os cápitulos do livro? 
+Apenas diga sim ou não.
+
+================================================================================
+  O PROCESSO DE PENSAMENTO ORIENTADO A OBJETOS — Matt Weisfeld
+================================================================================
+
+PARTE 1 — CONCEITOS FUNDAMENTAIS
+--------------------------------------------------------------------------------
+
+  Capítulo 1 — Introdução aos conceitos de orientação a objetos
+    • Diferença entre programação procedural e orientada a objetos
+    • O que é um objeto e o que é uma classe 
+
+  Capítulo 2 — Como pensar em objetos
+    • Interface (o que o objeto mostra) vs iHerança, polimorfismo e composiçãomplementação (o que ele esconde)
+    • Como identificar as responsabilidades de um objeto
+
+  Capítulo 3 — Conceitos avançados de orientação a objetos
+    • Herança, polimorfismo, composição e agregação
+    • Como as classes se relacionam de forma hierárquica
+
+  Capítulo 4 — A anatomia de uma classe
+    • Nome da classe, atributos (dados) e métodos (comportamentos)
+    • Como organizar esses elementos na "planta" do objeto
+
+  Capítulo 5 — Diretrizes para o design de classes
+    • Regras práticas para classes robustas diante de mudanças no sistema
+
+PARTE 2 — O PROCESSO DE DESIGN E APLICAÇÕES
+--------------------------------------------------------------------------------
+
+  Capítulo 6 — Projetando com objetos
+    • Processo de análise e design: do problema no papel ao desenho de classes
+
+  Capítulo 7 — O domínio das heranças e composições
+    • Quando usar "é um" (herança) e "tem um" (composição)
+    • Importante para evitar erros de arquitetura
+
+  Capítulo 8 — Frameworks e reutilização: interfaces e classes abstratas
+
+  Capítulo 9 — Construindo objetos e projetando sistemas orientados a objetos
+
+PARTE 3 — TÓPICOS CONTEMPORÂNEOS (MAIS TÉCNICOS)
+--------------------------------------------------------------------------------
+
+  Capítulo 10 — Criando modelos com UML (introdução visual ao desenho de classes)
+
+  Capítulo 11 — Objetos e XML
+
+  Capítulo 12 — Objetos e a Internet
+
+  Capítulo 13 — Objetos e bancos de dados
+
+  Capítulo 14 — Projetando objetos portáveis
+
+================================================================================
