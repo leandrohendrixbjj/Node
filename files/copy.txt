@@ -1,0 +1,16 @@
+1-) https://www.youtube.com/watch?v=Oe421EPjeBE&t=145s => Course 3:25:00
+2-) https://www.youtube.com/watch?v=E1x98YpIQX8&t=176s => 1:13:00
+
+4-callBack
+
+
+https://chatgpt.com/c/69fef840-2dc8-83e9-9303-1f580e05e1ba => 10. Streams em HTTP
+Memória: Roteamento dinâmicohttps://medium.com/reactbrasil/como-o-javascript-funciona-gerenciamento-de-mem%C3%B3ria-como-lidar-com-4-vazamentos-comuns-de-5cfa341b9e39
+=> Quais são os vazamentos de memória?
+
+
+
+
+
+
+

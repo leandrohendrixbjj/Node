@@ -1,0 +1,50 @@
+================================================================================
+                              O QUE É NODE?
+================================================================================
+
+O Node.js é um runtime que permite executar JavaScript no backend.
+
+Ele é construído sobre o motor V8 (do Chrome) e usa um modelo baseado em:
+
+  • Single Thread
+  • Event Loop
+  • I/O não bloqueante
+
+
+================================================================================
+                    NODE É SÍNCRONO OU ASSÍNCRONO?
+================================================================================
+
+A resposta correta é:
+
+  O JavaScript no Node é síncrono,
+  mas o Node fornece APIs assíncronas e não bloqueantes para operações de I/O.
+
+
+--------------------------------------------------------------------------------
+  Código comum → Síncrono
+--------------------------------------------------------------------------------
+
+  console.log("A");
+  console.log("B");
+  console.log("C");
+
+  → Executa linha por linha.
+
+
+--------------------------------------------------------------------------------
+  Operações de I/O → Assíncronas
+--------------------------------------------------------------------------------
+
+  setTimeout(() => {
+    console.log("Demorou 2 segundos");
+  }, 2000);
+
+  console.log("Executou primeiro");
+
+  Saída:
+  ---------
+  Executou primeiro
+  Demorou 2 segundos
+
+  → O setTimeout não bloqueia o programa.

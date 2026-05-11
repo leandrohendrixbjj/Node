@@ -59,3 +59,10 @@ coverage/
 # Prisma
 prisma/dev.db
 prisma/dev.db-journal
+
+# Files
+data.txt
+nvm.txt
+package-lock.json
+package.json
+server.js
