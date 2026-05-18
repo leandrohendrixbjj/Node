@@ -1,0 +1,19 @@
+/domain
+    Order.js
+    Payment.js
+
+/messaging
+    /message
+        Message.js
+        MessageBuilder.js
+
+    /channel
+        Channel.js
+        RabbitChannel.js
+        KafkaChannel.js
+
+    /publisher
+        EventPublisher.js
+
+    /headers
+        HeaderBuilder.js
