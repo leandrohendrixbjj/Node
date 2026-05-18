@@ -36,8 +36,9 @@
 │ │ Microtasks    │                     │ Macrotasks (libuv)     │  │
 │ │ (V8 / Node)   │                     │                        │  │
 │ └──────┬────────┘                     │ timers (setTimeout)    │  │
-│        │                               │ poll (I/O, HTTP, fs)   │  │
-│        ▼                               │ check (setImmediate)   │  │
+│        │                              │ poll (I/O, HTTP)       │  │
+│        ▼                              │ poll (sockets TCP, fs) │  │
+                                        │ check (setImmediate)   │  │
 │ ┌───────────────┐                     │                        │  │
 │ │ Call Stack    │◄────────────────────┤                        │  │
 │ │ (execução)    │                     └────────┬───────────────┘  │
@@ -49,6 +50,10 @@
 │                                                                  │
 └──────────────────────────────────────────────────────────────────┘
 
+I/O         → operações de entrada e saída
+HTTP        → requisições/respostas de rede
+fs          → sistema de arquivos (File System)
+sockets TCP → conexões de rede TCP (banco, APIs, servidores)
 
 Fase em que a Libuv usar o Event Loop
                 ┌──────────────────────┐
