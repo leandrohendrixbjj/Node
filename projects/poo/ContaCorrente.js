@@ -25,9 +25,12 @@ class ContaCorrente {
   }
 }
 
-const cliente = new Cliente('Leandro',"225"); 
+module.exports = ContaCorrente;
 
-const contaCorrente = new ContaCorrente("0001", "12345-6", cliente);
-contaCorrente.depositar(500);
-contaCorrente.sacar(100);
-console.log(contaCorrente._cliente);
+if (require.main === module) {
+  const cliente = new Cliente('Leandro', '225');
+  const contaCorrente = new ContaCorrente('0001', '12345-6', cliente);
+  contaCorrente.depositar(500);
+  contaCorrente.sacar(100);
+  console.log(contaCorrente._cliente);
+}
