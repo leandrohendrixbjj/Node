@@ -1,1 +1,1 @@
-import './in-memory/main';
+import './in-memory/main.ts';

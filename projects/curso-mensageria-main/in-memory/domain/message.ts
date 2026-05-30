@@ -11,6 +11,9 @@ export type CreateMessageInput = {
 };
 
 export function createMessage(input: CreateMessageInput): Message {
+  
+  const id = input.id ?? crypto.randomUUID();
+
   const header =
       typeof input.header === 'string'
           ? input.header
@@ -22,7 +25,7 @@ export function createMessage(input: CreateMessageInput): Message {
           : JSON.stringify(input.payload);
 
   return {
-      id: input.id ?? crypto.randomUUID(),
+      id,
       header,
       payload,
   };

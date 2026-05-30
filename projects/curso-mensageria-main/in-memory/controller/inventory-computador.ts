@@ -1,6 +1,6 @@
-import { channels } from './channels.ts';
-import { type Message } from './message.ts';
-import { type ItemPedido } from './pedido.interface.ts';
+import { channels } from '../router/channels.ts';
+import { type Message } from '../domain/message.ts';
+import { type ItemPedido } from '../domain/pedido.interface.ts';
 import { waitRandomInMs } from './wait.ts';
 
 const SISTEMA = '[INVENTARIO(C)]';
@@ -18,4 +18,4 @@ export async function checarInventario(msg: Message) {
     console.debug(`${SISTEMA} - item ${itemPedido.nome} existe em estoque ✅`);
 }
 
-channels.ChecarInventarioComputador.subscribe(checarInventario);
+channels.inventarioComputador.subscribe(checarInventario);

@@ -1,12 +1,18 @@
-import type { ItemPedido } from "./pedido.interface";
-import type { Pedido } from "./pedido.interface";
-import { createMessage } from "./message";
-import { channels } from "./channels";
-import { Timestamp } from "./timestamp";
-import "./sppliter.ts";
-import "./router.ts";
-import './inventario-computador.ts';
-import './inventario-smartphone.ts';
+import type { ItemPedido } from "./domain/pedido.interface.ts";
+import type { Pedido } from "./domain/pedido.interface.ts";
+import { createMessage } from "./domain/message.ts";
+import { Timestamp } from "./domain/timestamp.ts";
+
+import { channels } from "./router/channels.ts";
+
+import { initSplitter } from "./controller/sppliter.ts";
+import { initItemInventoryChecker } from "./controller/item-inventory-checker.ts";
+
+import "./controller/inventory-computador.ts";
+import "./controller/inventory-smartphone.ts";
+
+initSplitter();
+initItemInventoryChecker();
 
 const itens: ItemPedido[] = [ 
   {
@@ -30,23 +36,14 @@ const pedido: Pedido = {
   itens: itens,  
 };
 
-const message = createMessage({  
-  payload: pedido,
+const message = createMessage({    
+  id: undefined,
   header: {
     DataHora: Timestamp.now('America/Sao_Paulo'),
   },
+  payload: pedido,
 });
 
 
-// Esculta Msg Canal Novo Pedido
-// channels.novoPedido.subscribe((message) => {
-//   console.debug("Esculta msg Canal [Novo_Pedido]", JSON.parse(message.payload))
-// })
-
-
 // Publica MSG
-channels.novoPedido.sendToChanel(message);
-
-
-
-
+channels.pedido.sendToChanel(message);

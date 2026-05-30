@@ -1,4 +1,4 @@
-import { type Message } from './message.ts';
+import { type Message } from '../domain/message.ts';
 import EventEmitter from 'node:events';
 
 
@@ -16,18 +16,16 @@ export function createChannel(name: string): Channel {
     
     // Publisher
     async sendToChanel(message: Message) {
-      const exceptionChannelName = ['item_pedido'];
-
-      if (!exceptionChannelName.includes(name)){
-        console.log(`Enviando mensagem para o canal ${name}:`, message);
-      }
-
-      eventEmitter.emit(name, message);
+       console.log(`Publisher: ${name}:`, message);
+       eventEmitter.emit(name, message);
     },
     
     // Consumer
     subscribe(handler: (message: Message) => void) {
-      eventEmitter.on(name, handler);
+      eventEmitter.on(name, (message: Message) => {
+        //console.debug(`Consumer: [${name}]:`, message);
+        handler(message);
+      });
     },
   };
 }
