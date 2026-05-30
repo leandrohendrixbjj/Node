@@ -22,6 +22,4 @@ export function router(msg: Message) {
   }
 }
 
-export function initItemInventoryChecker() {
-  channels.itemPedido.subscribe(router);
-}
+channels.itemPedido.subscribe(router);

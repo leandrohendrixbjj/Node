@@ -5,14 +5,11 @@ import { Timestamp } from "./domain/timestamp.ts";
 
 import { channels } from "./router/channels.ts";
 
-import { initSplitter } from "./controller/sppliter.ts";
-import { initItemInventoryChecker } from "./controller/item-inventory-checker.ts";
+import "./controller/sppliter.ts";
+import "./controller/item-inventory-checker.ts";
 
 import "./controller/inventory-computador.ts";
 import "./controller/inventory-smartphone.ts";
-
-initSplitter();
-initItemInventoryChecker();
 
 const itens: ItemPedido[] = [ 
   {

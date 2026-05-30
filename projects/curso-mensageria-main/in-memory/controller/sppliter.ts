@@ -22,6 +22,4 @@ export function splitter(message: Message)  {
   }
 }
 
-export function initSplitter() {
-  channels.pedido.subscribe(splitter);
-}
+channels.pedido.subscribe(splitter);
