@@ -16,6 +16,9 @@ export async function checarInventario(msg: Message) {
     await waitRandomInMs(1000, 3000);
 
     console.debug(`${SISTEMA} - item ${itemPedido.nome} existe em estoque ✅`);
+
+    // Publica MSG statusItemPedido
+    channels.statusItemPedido.sendToChanel(msg);
 }
 
 channels.inventarioSmartphone.subscribe(checarInventario);

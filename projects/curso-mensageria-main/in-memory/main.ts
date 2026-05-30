@@ -10,6 +10,7 @@ import "./controller/item-inventory-checker.ts";
 
 import "./controller/inventory-computador.ts";
 import "./controller/inventory-smartphone.ts";
+import "./controller/agregator.ts";
 
 const itens: ItemPedido[] = [ 
   {
@@ -18,12 +19,12 @@ const itens: ItemPedido[] = [
     quantidade: 1, 
     precoUnitario: 100, 
   },  
-  {
-    id: 'S_002', 
-    nome: 'SMARTTV', 
-    quantidade: 2, 
-    precoUnitario: 50 
-  },
+  // {
+  //   id: 'S_002', 
+  //   nome: 'SMARTTV', 
+  //   quantidade: 2, 
+  //   precoUnitario: 50 
+  // },
 ];
 
 

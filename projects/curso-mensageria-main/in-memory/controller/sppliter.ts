@@ -13,6 +13,7 @@ export function splitter(message: Message)  {
       id: undefined,
       header: {
         pedidoId: pedido.id,
+        totalItens: pedido.itens.length,
         DataHora: Timestamp.now('America/Sao_Paulo'),
       },
       payload: itemPedido      
