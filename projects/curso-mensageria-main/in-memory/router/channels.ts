@@ -8,6 +8,10 @@ export const channels = Object.freeze({
   inventarioComputador: createChannel('inventario_computador'),
   inventarioSmartphone: createChannel('inventario_smartphone'),
 
-  statusItemPedido: createChannel('status_item_pedido'),
-  statusPedido: createChannel('status_pedido'),
+  estoqueItemPedido: createChannel('estoque_item_pedido'),
+  estoquePedido: createChannel('estoque_pedido'),
+
+  pendenciaFinanceiroVerificada: createChannel('pendencia_financeiro_verificada'),
+
+  novoPedidoValido: createChannel('novo_pedido_valido'),
 });

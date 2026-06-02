@@ -18,7 +18,7 @@ export async function checarInventario(msg: Message) {
     console.debug(`${SISTEMA} - item ${itemPedido.nome} existe em estoque ✅`);
 
     // Publica MSG statusItemPedido
-    channels.statusItemPedido.sendToChanel(msg);
+    channels.estoqueItemPedido.sendToChanel(msg);
 }
 
 channels.inventarioSmartphone.subscribe(checarInventario);

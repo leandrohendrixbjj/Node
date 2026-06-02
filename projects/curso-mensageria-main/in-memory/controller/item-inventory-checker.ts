@@ -12,7 +12,8 @@ export function router(msg: Message) {
   const jobChecarInventario = createMessage({
       id: undefined,
       header: msg.header,
-      payload: itemPedido      
+      payload: itemPedido,
+      type: 'Pedido',
   });
   
   if(tipoItem === 'computador') {

@@ -1,13 +1,13 @@
 export interface Message {
   id: string;
   header: string;
-  payload: string;
+  payload: string;  
 }
 
 export type CreateMessageInput = {
   id?: string;
   header?: Record<string, any> | string;
-  payload: Record<string, any> | string;
+  payload: Record<string, any> | string;  
 };
 
 export function createMessage(input: CreateMessageInput): Message {
@@ -22,11 +22,11 @@ export function createMessage(input: CreateMessageInput): Message {
   const payload =
       typeof input.payload === 'string'
           ? input.payload
-          : JSON.stringify(input.payload);
+          : JSON.stringify(input.payload);  
 
   return {
       id,
       header,
-      payload,
+      payload      
   };
 }
