@@ -30,7 +30,7 @@ PARTE 1 — CONCEITOS FUNDAMENTAIS
 PARTE 2 — O PROCESSO DE DESIGN E APLICAÇÕES
 --------------------------------------------------------------------------------
 
-  Capítulo 6 — Projetando com objetos
+ * Capítulo 6 — Projetando com objetos
     • Processo de análise e design: do problema no papel ao desenho de classes
 
   Capítulo 7 — O domínio das heranças e composições
