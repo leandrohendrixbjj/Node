@@ -1,4 +1,4 @@
-const contaDomain = require('../domain/conta-service');
+const contaDomain = require('../domain/conta-domain');
 const { validateCreate } = require('../validators/conta-validator');
 
 class ContaController {
@@ -14,7 +14,8 @@ class ContaController {
 
       return res.status(201).json(conta);
     } catch (error) {
-      return res.status(500).json({ error: error.message });
+      const status = error.statusCode || 500;
+      return res.status(status).json({ error: error.message });
     }
   }
 }
