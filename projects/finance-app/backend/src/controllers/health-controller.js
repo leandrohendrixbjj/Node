@@ -1,4 +1,4 @@
-const healthService = require('../services/health-service');
+const healthService = require('../domain/health-service');
 
 class HealthController {
   async health(req, res) {

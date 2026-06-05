@@ -4,6 +4,9 @@ const router = express.Router();
 // Health routes
 router.use('/health', require('./health-routes'));
 
+// Conta routes
+router.use('/conta', require('./conta-routes'));
+
 // Root route
 router.use('/', (req, res) => {
   res.json({
