@@ -1,5 +1,5 @@
 const { normalizeUpperCase } = require('../utils/normalize');
-const { TIPOS_VALIDOS, RECORRENCIAS_VALIDAS } = require('../constants/conta');
+const { TIPOS_VALIDOS, RECORRENCIAS_VALIDAS, DIRECOES_VALIDAS, CAMPOS_ORDENACAO } = require('../constants/conta');
 
 function validateCreate(body) {
   const { descricao, tipo, recorrencia, ativa = true } = body;
@@ -36,13 +36,6 @@ function validateCreate(body) {
     }
   };
 }
-
-const CAMPOS_ORDENACAO = {
-  nome: 'descricao',
-  descricao: 'descricao'
-};
-
-const DIRECOES_VALIDAS = ['asc', 'desc'];
 
 function validateFindAll(query) {
   const { ordenar, direcao = 'asc' } = query;
