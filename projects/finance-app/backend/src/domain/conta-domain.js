@@ -1,6 +1,19 @@
 const db = require('../config/database');
 
 class ContaService {
+  async findAll({ orderBy, direction } = {}) {
+    let query = 'SELECT * FROM contas';
+
+    if (orderBy) {
+      const sortDirection = direction === 'desc' ? 'DESC' : 'ASC';
+      query += ` ORDER BY ${orderBy} ${sortDirection}`;
+    }
+
+    const [rows] = await db.query(query);
+
+    return rows;
+  }
+
   async findByDescricao(descricao) {
     const [rows] = await db.query(
       'SELECT id FROM contas WHERE descricao = ?',

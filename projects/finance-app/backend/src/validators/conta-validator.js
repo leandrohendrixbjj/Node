@@ -37,4 +37,38 @@ function validateCreate(body) {
   };
 }
 
-module.exports = { validateCreate };
+const CAMPOS_ORDENACAO = {
+  nome: 'descricao',
+  descricao: 'descricao'
+};
+
+const DIRECOES_VALIDAS = ['asc', 'desc'];
+
+function validateFindAll(query) {
+  const { ordenar, direcao = 'asc' } = query;
+
+  if (!ordenar) {
+    return { data: {} };
+  }
+
+  const campo = CAMPOS_ORDENACAO[ordenar.toLowerCase()];
+
+  if (!campo) {
+    return { error: 'ordenar deve ser nome ou descricao' };
+  }
+
+  const direcaoNormalizada = direcao.toLowerCase();
+
+  if (!DIRECOES_VALIDAS.includes(direcaoNormalizada)) {
+    return { error: 'direcao deve ser asc ou desc' };
+  }
+
+  return {
+    data: {
+      orderBy: campo,
+      direction: direcaoNormalizada
+    }
+  };
+}
+
+module.exports = { validateCreate, validateFindAll };
