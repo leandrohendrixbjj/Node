@@ -7,3 +7,6 @@ CREATE TABLE contas (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
+
+CREATE INDEX idx_contas_descricao ON contas (descricao);
+CREATE INDEX idx_contas_created_at ON contas (created_at);
