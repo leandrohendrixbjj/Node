@@ -1,35 +1,33 @@
-console.clear()
-
-// Callback é uma função passada como argumento para outra função ( Exemplo básico (síncrono) )
-
 /*
   A tradução literal de callback é "retorno de chamada".
 
-  Callback é uma função passada como argumento para outra função, para que seja executada em um momento específico, 
-  normalmente após a conclusão de alguma tarefa. Em operações assíncronas, o callback é executado quando a operação termina.
+  Callback é uma função passada como argumento para outra função, para que ela seja executada em um momento específico. 
+  Pode ser usada tanto em operações síncronas quanto assíncronas.
 
-  Esse exemplo mostra exatamente por que callbacks são tão utilizados em operações assíncronas:
-
-  - A função principal inicia uma tarefa demorada.
-  - O JavaScript não fica bloqueado esperando.
-  - Quando a tarefa termina, o callback é executado. 
+  Exemplo abaixo trata uma operação assíncrona.
   
 */
 
-function prepararPizza(sabor, callback) {
-  console.log(`Preparando pizza de ${sabor}...`);
+"use strict";
 
-  setTimeout(() => {
-    console.log(`Pizza de ${sabor} pronta!`);
-    callback(sabor); // Nesse ponto, executamos o callback (buscarPizza)
-  },1000);
-  
+console.clear();
+
+function garcon(callback) {
+    const pedido = Math.floor(Math.random() * 1000) + 1;
+
+    console.log(`Envia pedido ${pedido} para cozinha`);
+
+    setTimeout(() => {
+        callback(pedido);
+    }, 1000);
+
+    console.log("Atendendo outros clientes");
 }
 
-function buscarPizza(sabor){
-  console.log(`Cliente, receba a pizza de ${sabor}!`);
-};
+function delivery(pedido) {
+    console.log(`Pedido ${pedido} liberado pela cozinha`);
+}
 
-prepararPizza('marguerita', buscarPizza);
-
-console.log('ENquanto pizza é preparada, você pode fazer outras coisas...');
+for(let i = 0; i < 2; i++) {
+  garcon(delivery);
+}
