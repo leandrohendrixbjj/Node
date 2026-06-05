@@ -1,7 +1,5 @@
 const { normalizeUpperCase } = require('../utils/normalize');
-
-const TIPOS_VALIDOS = ['RECEITA', 'DESPESA'];
-const RECORRENCIAS_VALIDAS = ['FIXA', 'VARIAVEL'];
+const { TIPOS_VALIDOS, RECORRENCIAS_VALIDAS } = require('../constants/conta');
 
 function validateCreate(body) {
   const { descricao, tipo, recorrencia, ativa = true } = body;
