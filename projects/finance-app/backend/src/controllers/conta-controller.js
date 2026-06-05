@@ -1,5 +1,5 @@
 const contaDomain = require('../domain/conta-domain');
-const { validateCreate, validateFindAll } = require('../validators/conta-validator');
+const { validateCreate, validateFindAll, validateDeleteAt } = require('../validators/conta-validator');
 
 class ContaController {
   async findAll(req, res) {
@@ -37,6 +37,23 @@ class ContaController {
       const conta = await contaDomain.create(validation.data);
 
       return res.status(201).json(conta);
+    } catch (error) {
+      const status = error.statusCode || 500;
+      return res.status(status).json({ error: error.message });
+    }
+  }
+
+  async deleteAt(req, res) {
+    try {
+      const validation = validateDeleteAt(req.params);
+
+      if (validation.error) {
+        return res.status(400).json({ error: validation.error });
+      }
+
+      const conta = await contaDomain.deleteAt(validation.data.id);
+
+      return res.json(conta);
     } catch (error) {
       const status = error.statusCode || 500;
       return res.status(status).json({ error: error.message });

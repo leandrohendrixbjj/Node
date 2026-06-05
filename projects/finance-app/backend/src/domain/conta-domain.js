@@ -14,6 +14,24 @@ class ContaService {
     return rows;
   }
 
+  async findById(id) {
+    const [rows] = await db.query('SELECT * FROM contas WHERE id = ?', [id]);
+
+    return rows[0] ?? null;
+  }
+
+  async validateExistsById(id) {
+    const conta = await this.findById(id);
+
+    if (!conta) {
+      const error = new Error('Conta não encontrada');
+      error.statusCode = 404;
+      throw error;
+    }
+
+    return conta;
+  }
+
   async findByDescricao(descricao) {
     const [rows] = await db.query(
       'SELECT id FROM contas WHERE descricao = ?',
@@ -42,6 +60,14 @@ class ContaService {
     const [rows] = await db.query('SELECT * FROM contas WHERE id = ?', [result.insertId]);
 
     return rows[0];
+  }
+
+  async deleteAt(id) {
+    await this.validateExistsById(id);
+
+    await db.query('UPDATE contas SET ativa = 0 WHERE id = ?', [id]);
+
+    return this.findById(id);
   }
 }
 

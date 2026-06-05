@@ -5,5 +5,6 @@ const contaController = require('../controllers/conta-controller');
 
 router.get('/', contaController.findAll);
 router.post('/', contaController.create);
+router.delete('/:id', contaController.deleteAt);
 
 module.exports = router;    
