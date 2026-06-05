@@ -1,16 +1,9 @@
 const contaDomain = require('../domain/conta-domain');
-const { validateCreate, validateFindAll, validateDeleteAt } = require('../validators/conta-validator');
 
 class ContaController {
   async findAll(req, res) {
     try {
-      const validation = validateFindAll(req.query);
-
-      if (validation.error) {
-        return res.status(400).json({ error: validation.error });
-      }
-
-      const contas = await contaDomain.findAll(validation.data);
+      const contas = await contaDomain.findAll(req.query);
 
       if (contas.length === 0) {
         return res.json({
@@ -28,13 +21,7 @@ class ContaController {
 
   async create(req, res) {
     try {
-      const validation = validateCreate(req.body);
-
-      if (validation.error) {
-        return res.status(400).json({ error: validation.error });
-      }
-
-      const conta = await contaDomain.create(validation.data);
+      const conta = await contaDomain.create(req.body);
 
       return res.status(201).json(conta);
     } catch (error) {
@@ -43,15 +30,20 @@ class ContaController {
     }
   }
 
+  async update(req, res) {
+    try {
+      const conta = await contaDomain.update(req.body, req.params);
+
+      return res.json(conta);
+    } catch (error) {
+      const status = error.statusCode || 500;
+      return res.status(status).json({ error: error.message });
+    }
+  }
+
   async deleteAt(req, res) {
     try {
-      const validation = validateDeleteAt(req.params);
-
-      if (validation.error) {
-        return res.status(400).json({ error: validation.error });
-      }
-
-      const conta = await contaDomain.deleteAt(validation.data.id);
+      const conta = await contaDomain.deleteAt(req.params);
 
       return res.json(conta);
     } catch (error) {

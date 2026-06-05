@@ -1,7 +1,18 @@
 const { normalizeUpperCase } = require('../utils/normalize');
 const { TIPOS_VALIDOS, RECORRENCIAS_VALIDAS, DIRECOES_VALIDAS, CAMPOS_ORDENACAO } = require('../constants/conta');
 
-function validateCreate(body) {
+function validateConta(body, params) {
+  const isUpdate = params != null;
+  let id;
+
+  if (isUpdate) {
+    id = Number(params.id);
+
+    if (!Number.isInteger(id) || id <= 0) {
+      return { error: 'id inválido' };
+    }
+  }
+
   const { descricao, tipo, recorrencia, ativa = true } = body;
 
   const tipoNormalizado = normalizeUpperCase(tipo);
@@ -15,7 +26,7 @@ function validateCreate(body) {
     return { error: 'descricao deve ter no máximo 100 caracteres' };
   }
 
-  if (!tipoNormalizado || !TIPOS_VALIDOS.includes(tipoNormalizado)) {
+  if (!isUpdate && (!tipoNormalizado || !TIPOS_VALIDOS.includes(tipoNormalizado))) {
     return { error: 'tipo deve ser RECEITA ou DESPESA' };
   }
 
@@ -27,14 +38,19 @@ function validateCreate(body) {
     return { error: 'ativa deve ser um valor booleano' };
   }
 
-  return {
-    data: {
-      descricao: descricao.trim(),
-      tipo: tipoNormalizado,
-      recorrencia: recorrenciaNormalizada,
-      ativa
-    }
+  const data = {
+    descricao: descricao.trim(),
+    recorrencia: recorrenciaNormalizada,
+    ativa
   };
+
+  if (isUpdate) {
+    data.id = id;
+  } else {
+    data.tipo = tipoNormalizado;
+  }
+
+  return { data };
 }
 
 function validateFindAll(query) {
@@ -74,4 +90,4 @@ function validateDeleteAt(params) {
   return { data: { id } };
 }
 
-module.exports = { validateCreate, validateFindAll, validateDeleteAt };
+module.exports = { validateConta, validateFindAll, validateDeleteAt };
