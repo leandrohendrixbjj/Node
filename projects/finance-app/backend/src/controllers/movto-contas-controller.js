@@ -15,10 +15,9 @@ class MovtoContasController {
 
   async create(req, res) {
     try {
-      return res.json({
-        message: 'Metodo create não implementado.',
-        data: []
-      });
+      const movtoConta = await movtoContasDomain.create(req.body);
+
+      return res.status(201).json(movtoConta);
     } catch (error) {
       const status = error.statusCode || 500;
       return res.status(status).json({ error: error.message });
