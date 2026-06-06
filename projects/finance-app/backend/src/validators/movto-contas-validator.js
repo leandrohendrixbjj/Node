@@ -3,7 +3,9 @@ const {
   STATUS_VALIDOS,
   PAGINATION_DEFAULT_PAGE,
   PAGINATION_DEFAULT_LIMIT,
-  PAGINATION_MAX_LIMIT
+  PAGINATION_MAX_LIMIT,
+  DIRECOES_VALIDAS,
+  CAMPOS_ORDENACAO
 } = require('../constants/movto-contas');
 const contaDomain = require('../domain/conta-domain');
 
@@ -67,6 +69,7 @@ async function validateMovtoConta(body) {
 function validateFindAll(query) {
   const page = Number(query.page ?? PAGINATION_DEFAULT_PAGE);
   const limit = Number(query.limit ?? PAGINATION_DEFAULT_LIMIT);
+  const { ordenar, direcao = 'asc' } = query;
 
   if (!Number.isInteger(page) || page <= 0) {
     return { error: 'page deve ser um inteiro positivo' };
@@ -76,13 +79,32 @@ function validateFindAll(query) {
     return { error: `limit deve ser entre 1 e ${PAGINATION_MAX_LIMIT}` };
   }
 
-  return {
-    data: {
-      page,
-      limit,
-      offset: (page - 1) * limit
-    }
+  const data = {
+    page,
+    limit,
+    offset: (page - 1) * limit
   };
+
+  if (!ordenar) {
+    return { data };
+  }
+
+  const campo = CAMPOS_ORDENACAO[ordenar.toLowerCase()];
+
+  if (!campo) {
+    return { error: 'ordenar deve ser conta_id, tipo, data_vencimento ou status' };
+  }
+
+  const direcaoNormalizada = direcao.toLowerCase();
+
+  if (!DIRECOES_VALIDAS.includes(direcaoNormalizada)) {
+    return { error: 'direcao deve ser asc ou desc' };
+  }
+
+  data.orderBy = campo;
+  data.direction = direcaoNormalizada;
+
+  return { data };
 }
 
 module.exports = { validateMovtoConta, validateFindAll };

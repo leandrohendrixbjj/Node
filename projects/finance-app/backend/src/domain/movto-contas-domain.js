@@ -25,10 +25,17 @@ class MovtoContasDomain {
       throw error;
     }
 
-    const { page, limit, offset } = validation.data;
+    const { page, limit, offset, orderBy, direction } = validation.data;
+
+    const sortDirection = orderBy
+      ? (direction === 'desc' ? 'DESC' : 'ASC')
+      : 'DESC';
+    const orderClause = orderBy
+      ? `ORDER BY ${orderBy} ${sortDirection}, m.id DESC`
+      : 'ORDER BY m.data_vencimento DESC, m.id DESC';
 
     const [rows] = await db.query(
-      `${MOVTO_CONTAS_SELECT_SQL} ORDER BY m.data_vencimento DESC, m.id DESC LIMIT ? OFFSET ?`,
+      `${MOVTO_CONTAS_SELECT_SQL} ${orderClause} LIMIT ? OFFSET ?`,
       [limit, offset]
     );
 
