@@ -52,8 +52,8 @@ class MovtoContasDomain {
     };
   }
 
-  async _validateMovtoConta(body) {
-    const validation = await validateMovtoConta(body);
+  async _validateMovtoConta(body, params) {
+    const validation = await validateMovtoConta(body, params);
 
     if (validation.error) {
       const error = new Error(validation.error);
@@ -113,6 +113,21 @@ class MovtoContasDomain {
     await this.findByIdOrFail(id);
 
     await db.query('UPDATE movto_contas SET ativa = 0 WHERE id = ?', [id]);
+
+    return this.findById(id);
+  }
+
+  async update(body, params) {
+    const { id, ...data } = await this._validateMovtoConta(body, params);
+
+    await this.findByIdOrFail(id);
+
+    const { conta_id, valor, data_vencimento, status, observacao, ativa } = data;
+
+    await db.query(
+      'UPDATE movto_contas SET conta_id = ?, valor = ?, data_vencimento = ?, status = ?, ativa = ?, observacao = ?, updated_at = NOW() WHERE id = ?',
+      [conta_id, valor, data_vencimento, status, ativa, observacao, id]
+    );
 
     return this.findById(id);
   }

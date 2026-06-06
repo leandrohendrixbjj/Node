@@ -9,7 +9,18 @@ const {
 } = require('../constants/movto-contas');
 const contaDomain = require('../domain/conta-domain');
 
-async function validateMovtoConta(body) {
+async function validateMovtoConta(body, params) {
+  const isUpdate = params != null;
+  let id;
+
+  if (isUpdate) {
+    id = Number(params.id);
+
+    if (!Number.isInteger(id) || id <= 0) {
+      return { error: 'id inválido' };
+    }
+  }
+
   const { conta_id, valor, data_vencimento, status = 'PAGO', observacao, ativa = true } = body;
 
   const contaId = Number(conta_id);
@@ -54,16 +65,20 @@ async function validateMovtoConta(body) {
     return { error: 'ativa deve ser um valor booleano' };
   }
 
-  return {
-    data: {
-      conta_id: contaId,
-      valor: valorNumerico.toFixed(2),
-      data_vencimento,
-      status: statusNormalizado,
-      observacao: observacao?.trim() || null,
-      ativa
-    }
+  const data = {
+    conta_id: contaId,
+    valor: valorNumerico.toFixed(2),
+    data_vencimento,
+    status: statusNormalizado,
+    observacao: observacao?.trim() || null,
+    ativa
   };
+
+  if (isUpdate) {
+    data.id = id;
+  }
+
+  return { data };
 }
 
 function validateFindAll(query) {

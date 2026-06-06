@@ -33,10 +33,9 @@ class MovtoContasController {
 
   async update(req, res) {
     try {
-      return res.json({
-        message: 'Metodo update não implementado.',
-        data: []
-      });
+      const movtoConta = await movtoContasDomain.update(req.body, req.params);
+
+      return res.json(movtoConta);
     } catch (error) {
       const status = error.statusCode || 500;
       return res.status(status).json({ error: error.message });
