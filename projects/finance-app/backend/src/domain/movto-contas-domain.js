@@ -1,6 +1,6 @@
 const db = require('../config/database');
 const { getTotalWithCache, invalidateCountCache } = require('./cache');
-const { validateMovtoConta, validateFindAll } = require('../validators/movto-contas-validator');
+const { validateMovtoConta, validateFindAll, validateDeleteAt } = require('../validators/movto-contas-validator');
 
 const MOVTO_CONTAS_SELECT_SQL = `
   SELECT
@@ -79,6 +79,42 @@ class MovtoContasDomain {
     const [rows] = await db.query('SELECT * FROM movto_contas WHERE id = ?', [result.insertId]);
 
     return rows[0];
+  }
+
+  async findById(id) {
+    const [rows] = await db.query('SELECT * FROM movto_contas WHERE id = ?', [id]);
+
+    return rows[0] ?? null;
+  }
+
+  async findByIdOrFail(id) {
+    const movtoConta = await this.findById(id);
+
+    if (!movtoConta) {
+      const error = new Error('Movimentação não encontrada');
+      error.statusCode = 404;
+      throw error;
+    }
+
+    return movtoConta;
+  }
+
+  async deleteAt(params) {
+    const validation = validateDeleteAt(params);
+
+    if (validation.error) {
+      const error = new Error(validation.error);
+      error.statusCode = 400;
+      throw error;
+    }
+
+    const { id } = validation.data;
+
+    await this.findByIdOrFail(id);
+
+    await db.query('UPDATE movto_contas SET ativa = 0 WHERE id = ?', [id]);
+
+    return this.findById(id);
   }
 }
 

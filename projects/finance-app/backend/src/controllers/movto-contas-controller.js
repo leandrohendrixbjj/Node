@@ -45,10 +45,9 @@ class MovtoContasController {
 
   async deleteAt(req, res) {
     try {
-      return res.json({
-        message: 'Metodo deleteAt não implementado.',
-        data: []
-      });
+      const movtoConta = await movtoContasDomain.deleteAt(req.params);
+
+      return res.json(movtoConta);
     } catch (error) {
       const status = error.statusCode || 500;
       return res.status(status).json({ error: error.message });
