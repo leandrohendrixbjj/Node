@@ -7,6 +7,9 @@ router.use('/health', require('./health-routes'));
 // Conta routes
 router.use('/conta', require('./conta-routes'));
 
+// Movto Contas routes
+router.use('/movto-contas', require('./movto-contas'));
+
 // Root route
 router.use('/', (req, res) => {
   res.json({
