@@ -1,5 +1,10 @@
 const { normalizeUpperCase } = require('../utils/normalize');
-const { STATUS_VALIDOS } = require('../constants/movto-contas');
+const {
+  STATUS_VALIDOS,
+  PAGINATION_DEFAULT_PAGE,
+  PAGINATION_DEFAULT_LIMIT,
+  PAGINATION_MAX_LIMIT
+} = require('../constants/movto-contas');
 const contaDomain = require('../domain/conta-domain');
 
 async function validateMovtoConta(body) {
@@ -59,4 +64,25 @@ async function validateMovtoConta(body) {
   };
 }
 
-module.exports = { validateMovtoConta };
+function validateFindAll(query) {
+  const page = Number(query.page ?? PAGINATION_DEFAULT_PAGE);
+  const limit = Number(query.limit ?? PAGINATION_DEFAULT_LIMIT);
+
+  if (!Number.isInteger(page) || page <= 0) {
+    return { error: 'page deve ser um inteiro positivo' };
+  }
+
+  if (!Number.isInteger(limit) || limit <= 0 || limit > PAGINATION_MAX_LIMIT) {
+    return { error: `limit deve ser entre 1 e ${PAGINATION_MAX_LIMIT}` };
+  }
+
+  return {
+    data: {
+      page,
+      limit,
+      offset: (page - 1) * limit
+    }
+  };
+}
+
+module.exports = { validateMovtoConta, validateFindAll };

@@ -3,16 +3,17 @@ const movtoContasDomain = require('../domain/movto-contas-domain');
 class MovtoContasController {
   async findAll(req, res) {
     try {
-      const movtoContas = await movtoContasDomain.findAll();
+      const result = await movtoContasDomain.findAll(req.query);
 
-      if (movtoContas.length === 0) {
+      if (result.data.length === 0) {
         return res.json({
           message: 'Nenhuma movimentação cadastrada.',
-          data: []
+          data: [],
+          pagination: result.pagination
         });
       }
 
-      return res.json(movtoContas);
+      return res.json(result);
     } catch (error) {
       const status = error.statusCode || 500;
       return res.status(status).json({ error: error.message });
