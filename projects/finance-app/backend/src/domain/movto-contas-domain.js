@@ -2,6 +2,23 @@ const db = require('../config/database');
 const { validateMovtoConta } = require('../validators/movto-contas-validator');
 
 class MovtoContasDomain {
+  async findAll() {
+    const [rows] = await db.query(`
+      SELECT
+        m.id,
+        c.descricao AS conta,
+        c.tipo,
+        m.valor,
+        m.data_vencimento,
+        m.status
+      FROM movto_contas m
+      INNER JOIN contas c
+        ON c.id = m.conta_id
+    `);
+
+    return rows;
+  }
+
   async _validateMovtoConta(body) {
     const validation = await validateMovtoConta(body);
 

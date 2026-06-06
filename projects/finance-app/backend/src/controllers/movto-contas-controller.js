@@ -3,10 +3,16 @@ const movtoContasDomain = require('../domain/movto-contas-domain');
 class MovtoContasController {
   async findAll(req, res) {
     try {
-      return res.json({
-        message: 'Metodo findAll não implementado.',
-        data: []
-      });      
+      const movtoContas = await movtoContasDomain.findAll();
+
+      if (movtoContas.length === 0) {
+        return res.json({
+          message: 'Nenhuma movimentação cadastrada.',
+          data: []
+        });
+      }
+
+      return res.json(movtoContas);
     } catch (error) {
       const status = error.statusCode || 500;
       return res.status(status).json({ error: error.message });
