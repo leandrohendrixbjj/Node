@@ -48,8 +48,7 @@ function confirmaEstoquePedido(idPedido: any) {
         header: {
           DataHora: Timestamp.now('America/Sao_Paulo'),
         },
-        payload: JSON.stringify(validadePedido),
-        type: 'Pedido',
+        payload: JSON.stringify(validadePedido)        
     });    
     
     channels.estoquePedido.sendToChanel(mensagem);

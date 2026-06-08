@@ -30,8 +30,7 @@ export async function financeiro(msg: Message) {
       payload: statusPedido,   
       header: {
         DataHora: Timestamp.now('America/Sao_Paulo'),
-      },
-      type: 'Pedido',
+      }      
     });
 
     // Publica MSG statusItemPedido
