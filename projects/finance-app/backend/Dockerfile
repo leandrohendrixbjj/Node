@@ -1,10 +1,10 @@
-FROM node:22-bookworm
+FROM node:22-alpine
 
 WORKDIR /app
 
 COPY package*.json ./
 
-RUN npm install --verbose
+RUN npm ci --verbose
 
 COPY . .
 
