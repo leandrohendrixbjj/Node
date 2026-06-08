@@ -3,10 +3,9 @@ const userDomain = require('../domain/user-domain');
 class UserController {
   async findOneByUsername(req, res) {
     try {
-        return res.json({
-          message: 'Rota user FIND ONE BY USERNAME não implementada.',
-          data: []
-        });   
+      const user = await userDomain.findOneByUsername(req.params);
+
+      return res.json(user);
     } catch (error) {
       const status = error.statusCode || 500;
       return res.status(status).json({ error: error.message });
@@ -15,22 +14,20 @@ class UserController {
 
   async create(req, res) {
     try {
-      return res.json({
-        message: 'Rota user  CREATE não implementada.',
-        data: []
-      });
+      const user = await userDomain.create(req.body);
+
+      return res.status(201).json(user);
     } catch (error) {
       const status = error.statusCode || 500;
       return res.status(status).json({ error: error.message });
     }
-  }  
+  }
 
   async deleteAt(req, res) {
     try {
-      return res.json({
-        message: 'Rota user DELETE AT não implementada.',
-        data: []
-      });
+      const user = await userDomain.deleteAt(req.params);
+
+      return res.json(user);
     } catch (error) {
       const status = error.statusCode || 500;
       return res.status(status).json({ error: error.message });
