@@ -14,6 +14,8 @@ import "./controller/inventory-computador.ts";
 import "./controller/agregator.ts";
 import "./controller/financeiro.ts";
 
+import "./controller/validate-pedido-agregator.ts";
+
 const itens: ItemPedido[] = [ 
   {
     id: 'C_001', 

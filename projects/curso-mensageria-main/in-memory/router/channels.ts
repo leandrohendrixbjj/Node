@@ -14,4 +14,6 @@ export const channels = Object.freeze({
   pendenciaFinanceiroVerificada: createChannel('pendencia_financeiro_verificada'),
 
   novoPedidoValido: createChannel('novo_pedido_valido'),
+
+  pedidoPodeSerAtendido: createChannel('pedido_pode_ser_atendido'),
 });

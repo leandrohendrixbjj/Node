@@ -23,17 +23,14 @@ export function aggregator(msg: Message) {
         `${SISTEMA} (Pedido=${pedidoId}) - Item de pedido verificado: ${itemPedido.nome}`,
     );
     
-    const pedido = mapaItensDoPedido.get(pedidoId) ?? { atual: 0, total: totalItens };
-    if (pedido) {
-        pedido.atual++;
-        if (pedido.atual >= pedido.total) {
-            confirmaEstoquePedido(pedidoId);
-        }
-    } else {
-        mapaItensDoPedido.set(pedidoId, {
-            atual: 1,
-            total: totalItens,
-        });
+    let pedido = mapaItensDoPedido.get(pedidoId);
+    if (!pedido) {
+        pedido = { atual: 0, total: totalItens };
+        mapaItensDoPedido.set(pedidoId, pedido);
+    }
+    pedido.atual++;
+    if (pedido.atual >= pedido.total) {
+        confirmaEstoquePedido(pedidoId);
     }
 }
 
