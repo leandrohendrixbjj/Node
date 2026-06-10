@@ -7,7 +7,7 @@ const SISTEMA = '[VALIDAR - PEDIDO - AGREGATOR]';
 async function validatePedidoAgregator(message: Message) {
   const validacao: ValidadePedido = JSON.parse(message.payload);
   
-  const idPedido = validacao.idPedido;  
+  const idPedido = validacao.idPedido;    
 
   if (validacao.tipo === 'estoque' && validacao.podeSerAtendido) {
     console.debug(`${SISTEMA} - Pedido ${idPedido} pode ser atendido por estoque ✅`);
