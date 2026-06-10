@@ -18,6 +18,75 @@
         width: 355px;
     }
 
+    & .mensagem-erro,
+    & .mensagem-sucesso {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 24px;
+        padding: 14px 16px;
+        border-radius: 8px;
+        font-size: var(--fonte-t3);
+        font-weight: 500;
+        animation: mensagem-aparecer 0.25s ease;
+
+        &[hidden] {
+            display: none;
+        }
+    }
+
+    & .mensagem-erro {
+        border: 1px solid #e57373;
+        background-color: #fff5f5;
+        color: #8b2e2e;
+
+        &::before {
+            content: '!';
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background-color: #e57373;
+            color: #fff;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+    }
+
+    & .mensagem-sucesso {
+        border: 1px solid var(--cor-secundaria);
+        background-color: #eef7ec;
+        color: #2d6a24;
+
+        &::before {
+            content: '✓';
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background-color: var(--cor-secundaria);
+            color: #fff;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+    }
+
+    @keyframes mensagem-aparecer {
+        from {
+            opacity: 0;
+            transform: translateY(-6px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
     @media (max-width: 950px) {
         width: 100%;
     }

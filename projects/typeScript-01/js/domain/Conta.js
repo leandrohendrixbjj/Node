@@ -5,15 +5,42 @@ class Conta {
         this.tipoTransacao = tipoTransacao;
         this.valor = valor;
         this.data = data;
-        this.atualizarSaldo();
+        this.transacaoValida = this.atualizarSaldo();
+    }
+
+    validarTransacao() {
+        if (this.tipoTransacao == null || this.tipoTransacao === '') {
+            return 'Selecione o tipo de transação para continuar.';
+        }
+
+        if (this.valor == null || this.valor === '') {
+            return 'Informe o valor da transação.';
+        }
+
+        if (this.data == null || this.data === '') {
+            return 'Informe a data da transação.';
+        }
+
+        const valorNumerico = Number(this.valor);
+
+        if (valorNumerico <= 0) {
+            return 'Informe um valor maior que zero.';
+        }
+
+        return null;
     }
 
     atualizarSaldo() {
-        const valorNumerico = Number(this.valor);
+        const erro = this.validarTransacao();
 
-        if (!this.tipoTransacao || !valorNumerico || valorNumerico <= 0) {
-            return;
+        if (erro) {
+            Messages.exibirErro(erro);
+            return false;
         }
+
+        Messages.limparErro();
+
+        const valorNumerico = Number(this.valor);
 
         if (this.tipoTransacao === 'Depósito') {
             Conta.saldo += valorNumerico;
@@ -23,6 +50,10 @@ class Conta {
         ) {
             Conta.saldo -= valorNumerico;
         }
+
+        Messages.exibirSucesso('Transação realizada com sucesso!');
+
+        return true;
     }
 
     static formatarSaldo() {

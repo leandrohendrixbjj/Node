@@ -11,6 +11,10 @@ formulario.addEventListener('submit', (evento) => {
 
     const conta = new Conta({ tipoTransacao, valor, data });
 
-    Conta.exibirSaldo();
-    console.log(conta);
+    if (conta.transacaoValida) {
+        Conta.exibirSaldo();
+        console.debug('Transação realizada com sucesso:', conta);
+    } else {
+        console.debug('Transação inválida:', conta);
+    }
 });
