@@ -1,3 +1,5 @@
+"use strict";
+
 class Conta {
     static saldo = 2500;
 

@@ -1,3 +1,5 @@
+"use strict";
+
 const formulario = document.querySelector('.block-nova-transacao form');
 
 Conta.exibirSaldo();
