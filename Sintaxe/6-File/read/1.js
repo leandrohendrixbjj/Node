@@ -4,7 +4,14 @@ console.clear();
  * Leitura síncrona (mais simples)
  *
  * Vantagens:  Muito simples
- * Desvantagens: Bloqueia a aplicação enquanto lê o arquivo
+ * Desvantagens: Bloqueia a aplicação enquanto lê o arquivo ( Bloqueio de Thread)
+ * 
+ * Durante esse período:
+
+  - Nenhum callback é executado.
+  - Nenhum setTimeout é processado.
+  - Nenhuma requisição HTTP recebe resposta.
+  - Nenhum evento é tratado.
  *
  * Fluxo:
  *

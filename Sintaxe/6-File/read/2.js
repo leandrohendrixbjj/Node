@@ -5,7 +5,7 @@ console.clear();
  *
  * Vantagens: 
  *  - Muito simples
- *  - Não bloqueia a aplicação enquanto lê o arquivo 
+ *  - Não bloqueia a aplicação enquanto lê o arquivo ( Não Bloqueio a Thread) 
  */
 
 const fs = require('fs')
