@@ -16,4 +16,6 @@ export const channels = Object.freeze({
   novoPedidoValido: createChannel('novo_pedido_valido'),
 
   pedidoPodeSerAtendido: createChannel('pedido_pode_ser_atendido'),
+
+  itemInvalido: createChannel('item_invalido'),
 });

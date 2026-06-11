@@ -4,22 +4,26 @@ import type { ItemPedido } from '../domain/pedido.interface.ts';
 
 export function router(msg: Message) {
   const itemPedido: ItemPedido = JSON.parse(msg.payload);
+  let tipoItem = 'invalido';
   
-  const tipoItem = itemPedido.id.startsWith('C')
-      ? 'computador'
-      : 'smartphone';
-  
+  if(itemPedido.id.startsWith('C')) {
+    tipoItem = 'computador';
+  } else if(itemPedido.id.startsWith('S')) {
+    tipoItem = 'smartphone';
+  } 
+
   const jobChecarInventario = createMessage({
       id: undefined,
       header: msg.header,
-      payload: itemPedido,
-      type: 'Pedido',
+      payload: itemPedido      
   });
   
   if(tipoItem === 'computador') {
     channels.inventarioComputador.sendToChanel(jobChecarInventario);
-  } else {
+  } else if(tipoItem === 'smartphone') {
     channels.inventarioSmartphone.sendToChanel(jobChecarInventario);
+  } else {
+    channels.itemInvalido.sendToChanel(jobChecarInventario);
   }
 }
 

@@ -9,7 +9,8 @@ import "./controller/sppliter.ts";
 import "./controller/item-inventory-checker.ts";
 
 import "./controller/inventory-computador.ts";
- import "./controller/inventory-smartphone.ts";
+import "./controller/inventory-smartphone.ts";
+import "./controller/item-invalido-handler.ts";
 
 import "./controller/agregator.ts";
 import "./controller/financeiro.ts";
@@ -26,6 +27,12 @@ const itens: ItemPedido[] = [
   {
     id: 'S_002', 
     nome: 'SMARTTV', 
+    quantidade: 2, 
+    precoUnitario: 50 
+  },
+  {
+    id: 'X_002', 
+    nome: 'GELADEIRA', 
     quantidade: 2, 
     precoUnitario: 50 
   },
