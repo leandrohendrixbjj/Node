@@ -1,10 +1,10 @@
 "use strict";
 
 /*
- * Quando você coloca async em uma função, você está dizendo duas coisas:
+ * Quando marcamos async em uma função:
  *
  *  1. A função sempre retornará uma Promise.
- *  2. Você poderá usar await dentro dela.
+ *  2. Permite usar await dentro do seu corpo
  */
 
 console.clear();

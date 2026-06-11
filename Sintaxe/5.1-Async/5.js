@@ -22,7 +22,7 @@ function buscarUsuarios() {
 }
 
 /*
- * O async abaixo é redundante.
+ * O async abaixo é redundante. ( Já que o fetch já retorna uma Promise. )
  */
 
 async function buscarUsuarios() {
@@ -30,26 +30,11 @@ async function buscarUsuarios() {
 }
 
 /*
- * O await abaixo também é redundante,
- * pois apenas repassa a Promise.
+ * O await abaixo também é redundante, ( Já que o fetch já retorna uma Promise. ) 
  */
 
 async function buscarUsuarios() {
     return await fetch(url);
-}
-
-/*
- * Agora o await passa a fazer sentido,
- * pois queremos tratar erros localmente.
- */
-
-async function buscarUsuarios() {
-    try {
-        return await fetch(url);
-    } catch (erro) {
-        console.error(erro);
-        throw erro;
-    }
 }
 
 /*
