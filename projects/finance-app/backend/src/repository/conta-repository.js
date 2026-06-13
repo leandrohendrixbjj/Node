@@ -1,7 +1,7 @@
 const db = require('../config/database');
 const { validateConta, validateFindAll, validateDeleteAt } = require('../validators/conta-validator');
 
-class ContaService {
+class ContaRepository {
   async findAll(query) {
     const validation = validateFindAll(query);
 
@@ -126,4 +126,4 @@ class ContaService {
   }
 }
 
-module.exports = new ContaService();
+module.exports = new ContaRepository();

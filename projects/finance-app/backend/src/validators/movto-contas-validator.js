@@ -7,7 +7,7 @@ const {
   DIRECOES_VALIDAS,
   CAMPOS_ORDENACAO
 } = require('../constants/movto-contas');
-const contaDomain = require('../domain/conta-domain');
+const contaRepository = require('../repository/conta-repository');
 
 async function validateMovtoConta(body, params) {
   const isUpdate = params != null;
@@ -29,7 +29,7 @@ async function validateMovtoConta(body, params) {
     return { error: `conta_id inválido` };
   }
 
-  const conta = await contaDomain.findById(contaId);
+  const conta = await contaRepository.findById(contaId);
 
   if (!conta) {
     return { error: `Conta: ${contaId} não possui cadastro.`, statusCode: 404 };

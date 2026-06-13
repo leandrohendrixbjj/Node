@@ -1,9 +1,9 @@
-const userDomain = require('../domain/user-domain');
+const userRepository = require('../repository/user-repository');
 
 class UserController {
   async findOneByUsername(req, res) {
     try {
-      const user = await userDomain.findOneByUsername(req.params);
+      const user = await userRepository.findOneByUsername(req.params);
 
       return res.json(user);
     } catch (error) {
@@ -14,7 +14,7 @@ class UserController {
 
   async create(req, res) {
     try {
-      const user = await userDomain.create(req.body);
+      const user = await userRepository.create(req.body);
 
       return res.status(201).json(user);
     } catch (error) {
@@ -25,7 +25,7 @@ class UserController {
 
   async deleteAt(req, res) {
     try {
-      const user = await userDomain.deleteAt(req.params);
+      const user = await userRepository.deleteAt(req.params);
 
       return res.json(user);
     } catch (error) {

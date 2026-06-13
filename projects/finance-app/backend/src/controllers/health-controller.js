@@ -1,4 +1,4 @@
-const healthService = require('../domain/health-domain');
+const healthRepository = require('../repository/health-repository');
 
 class HealthController {
   async health(req, res) {
@@ -10,7 +10,7 @@ class HealthController {
 
   async details(req, res) {
     try {
-      const result = await healthService.getHealth();
+      const result = await healthRepository.getHealth();
 
       return res.json(result);
     } catch (error) {

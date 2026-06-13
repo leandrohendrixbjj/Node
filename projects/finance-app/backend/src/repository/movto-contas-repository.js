@@ -1,5 +1,5 @@
 const db = require('../config/database');
-const { getTotalWithCache, invalidateCountCache } = require('./cache');
+const { getTotalWithCache, invalidateCountCache } = require('../service/cache');
 const { validateMovtoConta, validateFindAll, validateDeleteAt } = require('../validators/movto-contas-validator');
 
 const MOVTO_CONTAS_SELECT_SQL = `
@@ -15,7 +15,7 @@ const MOVTO_CONTAS_SELECT_SQL = `
     ON c.id = m.conta_id
 `;
 
-class MovtoContasDomain {
+class MovtoContasRepository {
   async findAll(query) {
     const validation = validateFindAll(query);
 
@@ -133,4 +133,4 @@ class MovtoContasDomain {
   }
 }
 
-module.exports = new MovtoContasDomain();
+module.exports = new MovtoContasRepository();

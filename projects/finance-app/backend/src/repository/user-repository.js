@@ -4,7 +4,7 @@ const { validateUser } = require('../validators/user-validator');
 
 const USER_SELECT_FIELDS = 'id, username, ativo, created_at, updated_at';
 
-class UserDomain {
+class UserRepository {
   _validateUser(body) {
     const validation = validateUser(body);
 
@@ -69,4 +69,4 @@ class UserDomain {
   }
 }
 
-module.exports = new UserDomain();
+module.exports = new UserRepository();

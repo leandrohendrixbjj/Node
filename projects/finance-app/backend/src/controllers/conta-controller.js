@@ -1,9 +1,9 @@
-const contaDomain = require('../domain/conta-domain');
+const contaRepository = require('../repository/conta-repository');
 
 class ContaController {
   async findAll(req, res) {
     try {
-      const contas = await contaDomain.findAll(req.query);
+      const contas = await contaRepository.findAll(req.query);
 
       if (contas.length === 0) {
         return res.json({
@@ -21,7 +21,7 @@ class ContaController {
 
   async create(req, res) {
     try {
-      const conta = await contaDomain.create(req.body);
+      const conta = await contaRepository.create(req.body);
 
       return res.status(201).json(conta);
     } catch (error) {
@@ -32,7 +32,7 @@ class ContaController {
 
   async update(req, res) {
     try {
-      const conta = await contaDomain.update(req.body, req.params);
+      const conta = await contaRepository.update(req.body, req.params);
 
       return res.json(conta);
     } catch (error) {
@@ -43,7 +43,7 @@ class ContaController {
 
   async deleteAt(req, res) {
     try {
-      const conta = await contaDomain.deleteAt(req.params);
+      const conta = await contaRepository.deleteAt(req.params);
 
       return res.json(conta);
     } catch (error) {

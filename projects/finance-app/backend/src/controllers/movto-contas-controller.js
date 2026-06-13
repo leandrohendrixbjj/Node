@@ -1,9 +1,9 @@
-const movtoContasDomain = require('../domain/movto-contas-domain');
+const movtoContasRepository = require('../repository/movto-contas-repository');
 
 class MovtoContasController {
   async findAll(req, res) {
     try {
-      const result = await movtoContasDomain.findAll(req.query);
+      const result = await movtoContasRepository.findAll(req.query);
 
       if (result.data.length === 0) {
         return res.json({
@@ -22,7 +22,7 @@ class MovtoContasController {
 
   async create(req, res) {
     try {
-      const movtoConta = await movtoContasDomain.create(req.body);
+      const movtoConta = await movtoContasRepository.create(req.body);
 
       return res.status(201).json(movtoConta);
     } catch (error) {
@@ -33,7 +33,7 @@ class MovtoContasController {
 
   async update(req, res) {
     try {
-      const movtoConta = await movtoContasDomain.update(req.body, req.params);
+      const movtoConta = await movtoContasRepository.update(req.body, req.params);
 
       return res.json(movtoConta);
     } catch (error) {
@@ -44,7 +44,7 @@ class MovtoContasController {
 
   async deleteAt(req, res) {
     try {
-      const movtoConta = await movtoContasDomain.deleteAt(req.params);
+      const movtoConta = await movtoContasRepository.deleteAt(req.params);
 
       return res.json(movtoConta);
     } catch (error) {

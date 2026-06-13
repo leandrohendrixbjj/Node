@@ -1,6 +1,6 @@
 const db = require('../config/database');
 
-class HealthService {
+class HealthRepository {
   async checkMysql() {
     await db.query('SELECT 1');
 
@@ -43,4 +43,4 @@ class HealthService {
   }
 }
 
-module.exports = new HealthService();
+module.exports = new HealthRepository();
