@@ -55,10 +55,17 @@ class UserDomain {
 
     const passwordHash = await bcrypt.hash(password, 10);
 
-    return usuarioRepository.create({
-      username,
-      passwordHash
-    });
+    const [result] = await db.query(
+      'INSERT INTO users (username, password_hash) VALUES (?, ?)',
+      [username, passwordHash]
+    );
+
+    const [rows] = await db.query(
+      `SELECT ${USER_SELECT_FIELDS} FROM users WHERE id = ?`,
+      [result.insertId]
+    );
+
+    return rows[0];
   }
 }
 
