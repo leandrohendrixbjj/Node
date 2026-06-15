@@ -1,7 +1,9 @@
 "use strict";
 
 const formulario = document.querySelector('.block-nova-transacao form');
+const campoValor = document.getElementById('valor');
 
+aplicarMascaraValor(campoValor);
 Conta.exibirSaldo();
 
 formulario.addEventListener('submit', (evento) => {

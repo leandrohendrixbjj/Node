@@ -54,7 +54,7 @@
                     </div>
                     <div class="campo">
                         <label for="valor">Valor:</label><br>
-                        <input type="number" name="valor" id="valor" class="campo-input" placeholder="0,00" step=".01" min="0" required />
+                        <input type="text" name="valor" id="valor" class="campo-input" placeholder="0,00" inputmode="numeric" autocomplete="off" required />
                     </div>
                     <div class="campo">
                         <label for="data">Data:</label><br>
@@ -110,6 +110,7 @@
             </div>
         </aside>
     </main>    
+    <script src="js/utils/formatarValor.js"></script>
     <script src="js/domain/Messages.js"></script>
     <script src="js/domain/Conta.js"></script>
     <script src="js/byte-bank.js"></script>

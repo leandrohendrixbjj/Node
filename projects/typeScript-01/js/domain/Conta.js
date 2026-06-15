@@ -1,7 +1,7 @@
 "use strict";
 
 class Conta {
-    static saldo = 2500;
+    static saldo = 0.01;
 
     constructor({ tipoTransacao, valor, data } = {}) {
         this.tipoTransacao = tipoTransacao;
@@ -23,7 +23,7 @@ class Conta {
             return 'Informe a data da transação.';
         }
 
-        const valorNumerico = Number(this.valor);
+        const valorNumerico = parseValorMoeda(this.valor);
 
         if (valorNumerico <= 0) {
             return 'Informe um valor maior que zero.';
@@ -42,7 +42,7 @@ class Conta {
 
         Messages.limparErro();
 
-        const valorNumerico = Number(this.valor);
+        const valorNumerico = parseValorMoeda(this.valor);
 
         if (this.tipoTransacao === 'Depósito') {
             Conta.saldo += valorNumerico;
