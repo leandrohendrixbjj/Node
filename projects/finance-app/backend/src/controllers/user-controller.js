@@ -33,6 +33,17 @@ class UserController {
       return res.status(status).json({ error: error.message });
     }
   }
+  
+  async update(req, res) {
+    try {
+      const user = await userRepository.update(req.body, req.params);
+
+      return res.json(user);
+    } catch (error) {
+      const status = error.statusCode || 500;
+      return res.status(status).json({ error: error.message });
+    }
+  }
 }
 
 module.exports = new UserController();

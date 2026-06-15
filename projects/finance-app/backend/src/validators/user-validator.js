@@ -1,5 +1,5 @@
 function validateUser(body) {
-  const { username, password } = body;
+  const { username, password, ativo } = body;
 
   if (!username || typeof username !== 'string' || username.trim().length === 0) {
     return { error: 'username é obrigatório' };
@@ -26,9 +26,20 @@ function validateUser(body) {
   return {
     data: {
       username: usernameNormalizado,
-      password
+      password,
+      ativo
     }
   };
 }
 
-module.exports = { validateUser };
+function validateDeleteAt(params) {
+  const id = Number(params.id);
+
+  if (!Number.isInteger(id) || id <= 0) {
+    return { error: 'id inválido' };
+  }
+
+  return { data: { id } };
+}
+
+module.exports = { validateUser, validateDeleteAt };
