@@ -1,33 +1,32 @@
+"use strict";
+
 console.clear();
 
 /*
- * O que async faz:
+ * O que é uma Promise?
  *
- *   - Transforma a função em uma Promise
- *   - Retorna uma Promise
+ * Uma Promise representa um valor que estará disponível no futuro.
  *
- *   Equivalente a: function exemplo() { return Promise.resolve(10) }
+ * Analogia — pedido em uma pizzaria:
  *
- * O que await faz:
+ *   Pedido realizado  →  Promise criada
+ *   Pizza pronta      →  Promise resolvida
+ *   Pizzaria fechou   →  Promise rejeitada
  *
- *   - Aguarda a Promise ser resolvida sem bloquear o Node.js
- *   - await só funciona dentro de funções async.
+ * Em Node.js, operações como:
  *
- * Fluxo:
+ *   - Consultas ao banco
+ *   - Chamadas HTTP
+ *   - Leitura de arquivos
+ *   - Filas (RabbitMQ, Pub/Sub)
  *
- *   await encontra Promise
- *        ↓
- *   função pausa execução
- *        ↓
- *   event loop continua rodando
- *        ↓
- *   Promise resolve
- *        ↓
- *   função continua
+ * normalmente são assíncronas e retornam Promises.
  */
 
-async function score() {
-  return await Promise.resolve(10);
+async function chamadaAPI() {
+  return await Promise.resolve("Resposta da API");
 }
 
-score().then(console.log);
+console.log("Iniciando a chamada da API");
+chamadaAPI().then(console.log);
+console.log("Continuando o código");
