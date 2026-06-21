@@ -29,15 +29,6 @@ class UserRepository {
     return validation.data;
   }
 
-  async findByUsername(username) {
-    const [rows] = await db.query(
-      `SELECT ${USER_SELECT_FIELDS} FROM users WHERE username = ?`,
-      [username]
-    );
-
-    return rows[0] ?? null;
-  }
-
   async findById(id) {
     const [rows] = await db.query(
       `SELECT ${USER_SELECT_FIELDS} FROM users WHERE id = ?`,
@@ -59,22 +50,13 @@ class UserRepository {
     return user;
   }
 
-  async findByUsernameOrFail(username) {
-    const user = await this.findByUsername(username);
+  async findOneById(params) {   
 
-    if (!user) {
-      const error = new Error('Usuário não encontrado');
-      error.statusCode = 404;
-      throw error;
-    }
+    const { id } = params;
+
+    const user = await this.findByIdOrFail(id);
 
     return user;
-  }
-
-  async findOneByUsername(params) {
-    const { username } = params;
-
-    return this.findByUsernameOrFail(username);
   }
 
   async create(body) {

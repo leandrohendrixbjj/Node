@@ -1,9 +1,9 @@
 const userRepository = require('../repository/user-repository');
 
 class UserController {
-  async findOneByUsername(req, res) {
+  async findOneById(req, res) {
     try {
-      const user = await userRepository.findOneByUsername(req.params);
+      const user = await userRepository.findOneById(req.params);
 
       return res.json(user);
     } catch (error) {
