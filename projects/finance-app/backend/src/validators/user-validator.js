@@ -1,3 +1,5 @@
+const { validateDeleteAt } = require('./shared/params');
+
 function validatePassword(password) {
   if (!password || typeof password !== 'string' || password.length === 0) {
     return { error: 'password é obrigatório' };
@@ -59,16 +61,6 @@ function validateUpdateUser(body) {
       ativo
     }
   };
-}
-
-function validateDeleteAt(params) {
-  const id = Number(params.id);
-
-  if (!Number.isInteger(id) || id <= 0) {
-    return { error: 'id inválido' };
-  }
-
-  return { data: { id } };
 }
 
 module.exports = {

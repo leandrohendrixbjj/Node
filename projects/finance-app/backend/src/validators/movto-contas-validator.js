@@ -7,7 +7,9 @@ const {
   DIRECOES_VALIDAS,
   CAMPOS_ORDENACAO
 } = require('../constants/movto-contas');
+
 const contaRepository = require('../repository/conta-repository');
+const { validateDeleteAt } = require('./shared/params');
 
 async function validateMovtoConta(body, params) {
   const isUpdate = params != null;
@@ -120,16 +122,6 @@ function validateFindAll(query) {
   data.direction = direcaoNormalizada;
 
   return { data };
-}
-
-function validateDeleteAt(params) {
-  const id = Number(params.id);
-
-  if (!Number.isInteger(id) || id <= 0) {
-    return { error: 'id inválido' };
-  }
-
-  return { data: { id } };
 }
 
 module.exports = { validateMovtoConta, validateFindAll, validateDeleteAt };

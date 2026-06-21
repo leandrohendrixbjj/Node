@@ -1,5 +1,6 @@
 const { normalizeUpperCase } = require('../utils/normalize');
 const { TIPOS_VALIDOS, RECORRENCIAS_VALIDAS, DIRECOES_VALIDAS, CAMPOS_ORDENACAO } = require('../constants/conta');
+const { validateDeleteAt } = require('./shared/params');
 
 function validateConta(body, params) {
   const isUpdate = params != null;
@@ -78,16 +79,6 @@ function validateFindAll(query) {
       direction: direcaoNormalizada
     }
   };
-}
-
-function validateDeleteAt(params) {
-  const id = Number(params.id);
-
-  if (!Number.isInteger(id) || id <= 0) {
-    return { error: 'id inválido' };
-  }
-
-  return { data: { id } };
 }
 
 module.exports = { validateConta, validateFindAll, validateDeleteAt };
