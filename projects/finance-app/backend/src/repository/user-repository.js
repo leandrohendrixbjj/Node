@@ -1,12 +1,12 @@
 const db = require('../config/database');
 const bcrypt = require('bcrypt');
-const { validateUser, validateDeleteAt } = require('../validators/user-validator');
+const { validateCreateUser, validateUpdateUser, validateDeleteAt } = require('../validators/user-validator');
 
 const USER_SELECT_FIELDS = 'id, username, ativo, created_at, updated_at';
 
 class UserRepository {
-  _validateUser(body) {
-    const validation = validateUser(body);
+  _validateCreate(body) {
+    const validation = validateCreateUser(body);
 
     if (validation.error) {
       const error = new Error(validation.error);
@@ -15,7 +15,19 @@ class UserRepository {
     }
 
     return validation.data;
-  } 
+  }
+
+  _validateUpdate(body) {
+    const validation = validateUpdateUser(body);
+
+    if (validation.error) {
+      const error = new Error(validation.error);
+      error.statusCode = 400;
+      throw error;
+    }
+
+    return validation.data;
+  }
 
   async findByUsername(username) {
     const [rows] = await db.query(
@@ -66,7 +78,7 @@ class UserRepository {
   }
 
   async create(body) {
-    const { username, password } = this._validateUser(body);
+    const { username, password } = this._validateCreate(body);
 
     if (await this.findByUsername(username)) {
       const error = new Error(`Usuário "${username}" já cadastrado`);
@@ -108,7 +120,7 @@ class UserRepository {
   }
 
   async update(body, params) {
-    const data = this._validateUser(body);
+    const data = this._validateUpdate(body);
     const { id } = params;    
         
     await this.findByIdOrFail(id);

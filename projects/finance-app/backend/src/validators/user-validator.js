@@ -1,4 +1,16 @@
-function validateUser(body) {
+function validatePassword(password) {
+  if (!password || typeof password !== 'string' || password.length === 0) {
+    return { error: 'password é obrigatório' };
+  }
+
+  if (password.length < 3) {
+    return { error: 'password deve ter no mínimo 3 caracteres' };
+  }
+
+  return { data: password };
+}
+
+function validateCreateUser(body) {
   const { username, password, ativo } = body;
 
   if (!username || typeof username !== 'string' || username.trim().length === 0) {
@@ -15,18 +27,35 @@ function validateUser(body) {
     return { error: 'username deve ter no máximo 50 caracteres' };
   }
 
-  if (!password || typeof password !== 'string' || password.length === 0) {
-    return { error: 'password é obrigatório' };
-  }
-
-  if (password.length < 3) {
-    return { error: 'password deve ter no mínimo 3 caracteres' };
+  const passwordValidation = validatePassword(password);
+  if (passwordValidation.error) {
+    return passwordValidation;
   }
 
   return {
     data: {
       username: usernameNormalizado,
-      password,
+      password: passwordValidation.data,
+      ativo
+    }
+  };
+}
+
+function validateUpdateUser(body) {
+  const { password, ativo } = body;
+
+  const passwordValidation = validatePassword(password);
+  if (passwordValidation.error) {
+    return passwordValidation;
+  }
+
+  if (ativo !== undefined && ativo !== 0 && ativo !== 1) {
+    return { error: 'ativo deve ser 0 ou 1' };
+  }
+
+  return {
+    data: {
+      password: passwordValidation.data,
       ativo
     }
   };
@@ -42,4 +71,8 @@ function validateDeleteAt(params) {
   return { data: { id } };
 }
 
-module.exports = { validateUser, validateDeleteAt };
+module.exports = {
+  validateCreateUser,
+  validateUpdateUser,
+  validateDeleteAt
+};
