@@ -2,8 +2,10 @@
 
 const formulario = document.querySelector('.block-nova-transacao form');
 const campoValor = document.getElementById('valor');
+const campoData = document.getElementById('data');
 
 aplicarMascaraValor(campoValor);
+aplicarDataAtual(campoData);
 Conta.exibirSaldo();
 
 formulario.addEventListener('submit', (evento) => {
