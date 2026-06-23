@@ -1,16 +1,24 @@
 "use strict";
 
+import { parseValorMoeda } from "../utils/formatarValor.js";
+import { Messages } from "./Messages.js";
+
 class Conta {
     static saldo = 0.01;
 
-    constructor({ tipoTransacao, valor, data } = {}) {
+    tipoTransacao: string;
+    valor: string;
+    data: string;
+    transacaoValida: boolean;
+
+    constructor({ tipoTransacao, valor, data }: { tipoTransacao: string, valor: string, data: string }) {
         this.tipoTransacao = tipoTransacao;
         this.valor = valor;
-        this.data = data;
+        this.data = data as string;
         this.transacaoValida = this.atualizarSaldo();
     }
 
-    validarTransacao() {
+    validarTransacao(): string | null {
         if (this.tipoTransacao == null || this.tipoTransacao === '') {
             return 'Selecione o tipo de transação para continuar.';
         }
@@ -32,7 +40,7 @@ class Conta {
         return null;
     }
 
-    atualizarSaldo() {
+    atualizarSaldo():boolean {
         const erro = this.validarTransacao();
 
         if (erro) {
@@ -58,15 +66,21 @@ class Conta {
         return true;
     }
 
-    static formatarSaldo() {
+    static formatarSaldo():string {
         return Conta.saldo.toLocaleString('pt-BR', {
             style: 'currency',
             currency: 'BRL',
         });
     }
 
-    static exibirSaldo() {
-        const elementoSaldo = document.querySelector('.block-saldo .valor');
-        elementoSaldo.textContent = Conta.formatarSaldo();
+    static exibirSaldo():void {
+        const elementoSaldo = 
+            document.querySelector('.block-saldo .valor') as HTMLElement | null;
+        
+        if (elementoSaldo) {
+            elementoSaldo.textContent = Conta.formatarSaldo();
+        }
     }
 }
+
+export { Conta };

@@ -65,3 +65,5 @@ class Messages {
         }
     }
 }
+
+export { Messages };

@@ -1,3 +1,6 @@
+"use strict";
+exports.__esModule = true;
+exports.Messages = void 0;
 var Messages = /** @class */ (function () {
     function Messages() {
     }
@@ -47,3 +50,4 @@ var Messages = /** @class */ (function () {
     };
     return Messages;
 }());
+exports.Messages = Messages;

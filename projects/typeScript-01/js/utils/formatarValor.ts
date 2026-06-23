@@ -32,3 +32,6 @@ function aplicarDataAtual(input?: HTMLInputElement): void {
     }
     input.valueAsDate = new Date();
 }
+
+
+export { formatarValorMoeda, parseValorMoeda, aplicarMascaraValor, aplicarDataAtual };
