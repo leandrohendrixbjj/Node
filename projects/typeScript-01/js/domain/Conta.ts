@@ -1,56 +1,72 @@
 "use strict";
-var Conta = /** @class */ (function () {
-    function Conta(_a) {
-        var _b = _a === void 0 ? {} : _a, tipoTransacao = _b.tipoTransacao, valor = _b.valor, data = _b.data;
+
+class Conta {
+    static saldo = 0.01;
+
+    constructor({ tipoTransacao, valor, data } = {}) {
         this.tipoTransacao = tipoTransacao;
         this.valor = valor;
         this.data = data;
         this.transacaoValida = this.atualizarSaldo();
     }
-    Conta.prototype.validarTransacao = function () {
+
+    validarTransacao() {
         if (this.tipoTransacao == null || this.tipoTransacao === '') {
             return 'Selecione o tipo de transação para continuar.';
         }
+
         if (this.valor == null || this.valor === '') {
             return 'Informe o valor da transação.';
         }
+
         if (this.data == null || this.data === '') {
             return 'Informe a data da transação.';
         }
-        var valorNumerico = parseValorMoeda(this.valor);
+
+        const valorNumerico = parseValorMoeda(this.valor);
+
         if (valorNumerico <= 0) {
             return 'Informe um valor maior que zero.';
         }
+
         return null;
-    };
-    Conta.prototype.atualizarSaldo = function () {
-        var erro = this.validarTransacao();
+    }
+
+    atualizarSaldo() {
+        const erro = this.validarTransacao();
+
         if (erro) {
             Messages.exibirErro(erro);
             return false;
         }
+
         Messages.limparErro();
-        var valorNumerico = parseValorMoeda(this.valor);
+
+        const valorNumerico = parseValorMoeda(this.valor);
+
         if (this.tipoTransacao === 'Depósito') {
             Conta.saldo += valorNumerico;
-        }
-        else if (this.tipoTransacao === 'Transferência' ||
-            this.tipoTransacao === 'Pagamento de Boleto') {
+        } else if (
+            this.tipoTransacao === 'Transferência' ||
+            this.tipoTransacao === 'Pagamento de Boleto'
+        ) {
             Conta.saldo -= valorNumerico;
         }
+
         Messages.exibirSucesso('Transação realizada com sucesso!');
+
         return true;
-    };
-    Conta.formatarSaldo = function () {
+    }
+
+    static formatarSaldo() {
         return Conta.saldo.toLocaleString('pt-BR', {
             style: 'currency',
-            currency: 'BRL'
+            currency: 'BRL',
         });
-    };
-    Conta.exibirSaldo = function () {
-        var elementoSaldo = document.querySelector('.block-saldo .valor');
+    }
+
+    static exibirSaldo() {
+        const elementoSaldo = document.querySelector('.block-saldo .valor');
         elementoSaldo.textContent = Conta.formatarSaldo();
-    };
-    Conta.saldo = 0.01;
-    return Conta;
-}());
+    }
+}
