@@ -1,49 +1,67 @@
-var Messages = /** @class */ (function () {
-    function Messages() {
-    }
-    Messages.exibirErro = function (mensagem) {
+class Messages {
+    static exibirErro(mensagem: string): void {
         Messages.limparSucesso();
-        var elementoErro = document.querySelector('.block-nova-transacao .mensagem-erro');
+
+        let elementoErro = 
+            document.querySelector('.block-nova-transacao .mensagem-erro') as HTMLElement | null;
+
         if (!elementoErro) {
             elementoErro = document.createElement('div');
             elementoErro.className = 'mensagem-erro';
             elementoErro.setAttribute('role', 'alert');
-            var formulario = document.querySelector('.block-nova-transacao form');
+
+            const formulario = 
+                document.querySelector('.block-nova-transacao form') as HTMLFormElement | null;
+
             if (formulario) {
                 formulario.insertBefore(elementoErro, formulario.firstChild);
             }
         }
+
         elementoErro.textContent = mensagem;
         elementoErro.hidden = false;
-    };
-    Messages.limparErro = function () {
-        var elementoErro = document.querySelector('.block-nova-transacao .mensagem-erro');
+    }
+
+    static limparErro(): void {
+        const elementoErro = 
+            document.querySelector('.block-nova-transacao .mensagem-erro') as HTMLElement | null;
+
         if (elementoErro) {
             elementoErro.hidden = true;
             elementoErro.textContent = '';
         }
-    };
-    Messages.exibirSucesso = function (mensagem) {
+    }
+
+    static exibirSucesso(mensagem: string): void {
         Messages.limparErro();
-        var elementoSucesso = document.querySelector('.block-nova-transacao .mensagem-sucesso');
+
+        let elementoSucesso = 
+            document.querySelector('.block-nova-transacao .mensagem-sucesso') as HTMLElement | null;
+
         if (!elementoSucesso) {
             elementoSucesso = document.createElement('div');
             elementoSucesso.className = 'mensagem-sucesso';
             elementoSucesso.setAttribute('role', 'status');
-            var formulario = document.querySelector('.block-nova-transacao form');
+
+            const formulario =  
+                document.querySelector('.block-nova-transacao form') as HTMLFormElement | null;
+
             if (formulario) {
                 formulario.insertBefore(elementoSucesso, formulario.firstChild);
             }
         }
+
         elementoSucesso.textContent = mensagem;
         elementoSucesso.hidden = false;
-    };
-    Messages.limparSucesso = function () {
-        var elementoSucesso = document.querySelector('.block-nova-transacao .mensagem-sucesso');
+    }
+
+    static limparSucesso(): void {
+        const elementoSucesso = 
+            document.querySelector('.block-nova-transacao .mensagem-sucesso') as HTMLElement | null;
+
         if (elementoSucesso) {
             elementoSucesso.hidden = true;
             elementoSucesso.textContent = '';
         }
-    };
-    return Messages;
-}());
+    }
+}

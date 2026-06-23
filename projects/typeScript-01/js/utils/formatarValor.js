@@ -21,3 +21,9 @@ function aplicarMascaraValor(input) {
         input.value = formatarValorMoeda(input.value);
     });
 }
+function aplicarDataAtual(input) {
+    if (!input) {
+        return;
+    }
+    input.valueAsDate = new Date();
+}

@@ -25,3 +25,10 @@ function aplicarMascaraValor(input: HTMLInputElement): void {
         input.value = formatarValorMoeda(input.value as string);
     });
 }
+
+function aplicarDataAtual(input?: HTMLInputElement): void {
+    if (!input) {
+        return;
+    }
+    input.valueAsDate = new Date();
+}
