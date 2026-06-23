@@ -1,4 +1,5 @@
 const userRepository = require('../repository/user-repository');
+const customChalk = require('../service/customChalk');
 
 class UserController {
   async findOneById(req, res) {
@@ -38,6 +39,17 @@ class UserController {
     try {
       const user = await userRepository.update(req.body, req.params);
 
+      return res.json(user);
+    } catch (error) {
+      const status = error.statusCode || 500;
+      return res.status(status).json({ error: error.message });
+    }
+  }
+
+  async login(req, res) {
+    try {
+      const user = await userRepository.login(req.body);
+      
       return res.json(user);
     } catch (error) {
       const status = error.statusCode || 500;

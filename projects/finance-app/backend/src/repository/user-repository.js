@@ -1,6 +1,7 @@
 const db = require('../config/database');
 const bcrypt = require('bcrypt');
 const { validateCreateUser, validateUpdateUser, validateDeleteAt } = require('../validators/user-validator');
+const customChalk = require('../service/customChalk');
 
 const USER_SELECT_FIELDS = 'id, username, ativo, created_at, updated_at';
 
@@ -59,6 +60,15 @@ class UserRepository {
     return user;
   }
 
+  async findByUsername(username) {
+    const [rows] = await db.query(
+      `SELECT ${USER_SELECT_FIELDS} FROM users WHERE username = ?`,
+      [username]
+    );
+
+    return rows[0] ?? null;
+  }
+
   async create(body) {
     const { username, password } = this._validateCreate(body);
 
@@ -114,6 +124,38 @@ class UserRepository {
     await db.query('UPDATE users SET ativo = ?, password_hash = ?, updated_at = NOW() WHERE id = ?', [ativo, passwordHash, id]);
 
     return this.findById(id);
+  }
+
+  async login(body) {
+    const { username, password } = this._validateUpdate(body);
+
+    console.log('username: ', username);
+    console.log('password: ', password);
+
+    // const user = await this.findByUsername(username);
+
+    // if (!user) {
+    //   const error = new Error('Usuário ou senha inválidos');
+    //   error.statusCode = 401;
+    //   throw error;
+    // }
+
+    // customChalk.info(`body: ${body}`);
+    // customChalk.info(`password: ${password}`);
+    // customChalk.info(`user.password_hash: ${user.password_hash}`);
+
+    const senhaValida = await bcrypt.compare(
+      password,
+      user.password_hash
+    );
+
+    if (!senhaValida) {
+      const error = new Error('Usuário ou senha inválidos');
+      error.statusCode = 401;
+      throw error;
+    }
+
+    return user;
   }
 }
 
