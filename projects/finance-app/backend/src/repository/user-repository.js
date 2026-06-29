@@ -3,7 +3,7 @@ const bcrypt = require('bcrypt');
 const { validateCreateUser, validateUpdateUser, validateDeleteAt } = require('../validators/user-validator');
 const customChalk = require('../service/customChalk');
 
-const USER_SELECT_FIELDS = 'id, username, ativo, created_at, updated_at';
+const USER_SELECT_FIELDS = 'id, username, password_hash, ativo, created_at, updated_at';
 
 class UserRepository {
   _validateCreate(body) {
@@ -127,20 +127,17 @@ class UserRepository {
   }
 
   async login(body) {
-    const { username, password } = this._validateUpdate(body);
+    const { username, password } = body;
+    
+    const user = await this.findByUsername(username);
 
-    console.log('username: ', username);
-    console.log('password: ', password);
+    if (!user) {
+      const error = new Error('Usuário ou senha inválidos');
+      error.statusCode = 401;
+      throw error;
+    }
 
-    // const user = await this.findByUsername(username);
-
-    // if (!user) {
-    //   const error = new Error('Usuário ou senha inválidos');
-    //   error.statusCode = 401;
-    //   throw error;
-    // }
-
-    // customChalk.info(`body: ${body}`);
+    console.log(customChalk.red(`user: ${user.password}`));
     // customChalk.info(`password: ${password}`);
     // customChalk.info(`user.password_hash: ${user.password_hash}`);
 

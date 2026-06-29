@@ -48,7 +48,7 @@ class UserController {
 
   async login(req, res) {
     try {
-      const user = await userRepository.login(req.body);
+      const user = await userRepository.login(req.body);      
       
       return res.json(user);
     } catch (error) {
