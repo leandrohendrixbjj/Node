@@ -17,6 +17,8 @@ import "./controller/financeiro.ts";
 
 import "./controller/validate-pedido-agregator.ts";
 
+import "./controller/analise.ts";
+
 const itens: ItemPedido[] = [ 
   {
     id: 'C_001', 
@@ -55,4 +57,5 @@ const message = createMessage({
 
 
 // Publica MSG
+channels.pedido.sendToChanel(message);
 channels.pedido.sendToChanel(message);
