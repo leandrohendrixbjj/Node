@@ -1,4 +1,1 @@
-Leandro
-Soares
-Ribeiro
-Ana
+Escrita simples (assíncrona – mais comum)

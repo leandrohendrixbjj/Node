@@ -1,0 +1,68 @@
+================================================================================
+                    OPERAÇÕES SÍNCRONAS — SEM THREAD POOL
+================================================================================
+
+Perceba que não existe Thread Pool.
+
+O próprio thread principal do Node faz a chamada ao sistema operacional e
+fica esperando o retorno.
+
+Enquanto isso:
+
+    • o Call Stack continua ocupado
+    • o Event Loop não consegue avançar
+    • nenhum callback é executado
+    • nenhuma requisição HTTP é atendida
+    • nenhum timer dispara
+
+
+┌─ Fluxo de execução do fs.readFileSync() / fs.writeFileSync() ───────────────────────┐
+│                                                                                     │
+│                    ┌──────────────────────┐                                         │
+│                    │      Código JS       │                                         │
+│                    └──────────┬───────────┘                                         │
+│                               │                                                     │
+│                               ▼                                                     │
+│                    ┌──────────────────────┐                                         │
+│                    │   V8 (Call Stack)    │                                         │
+│                    └──────────┬───────────┘                                         │
+│                               │                                                     │
+│                               ▼                                                     │
+│                    ┌──────────────────────┐                                         │
+│                    │ fs.readFileSync()    │                                         │
+│                    │ ou                   │                                         │
+│                    │ fs.writeFileSync()   │                                         │
+│                    └──────────┬───────────┘                                         │
+│                               │                                                     │
+│                               ▼                                                     │
+│                    ┌──────────────────────┐                                         │
+│                    │ Sistema Operacional  │                                         │
+│                    │ Lê/Grava o arquivo   │                                         │
+│                    └──────────┬───────────┘                                         │
+│                               │                                                     │
+│                 (Thread principal BLOQUEADA)                                        │
+│                               │                                                     │
+│                               ▼                                                     │
+│                    ┌──────────────────────┐                                         │
+│                    │ SO retorna o         │                                         │
+│                    │ resultado            │                                         │
+│                    └──────────┬───────────┘                                         │
+│                               │                                                     │
+│                               ▼                                                     │
+│                    ┌──────────────────────┐                                         │
+│                    │ V8 (Call Stack)      │                                         │
+│                    │ continua execução    │                                         │
+│                    └──────────┬───────────┘                                         │
+│                               │                                                     │
+│                               ▼                                                     │
+│                    ┌──────────────────────┐                                         │
+│                    │ Próxima linha de     │                                         │
+│                    │ código JavaScript    │                                         │
+│                    └──────────────────────┘                                         │
+│                                                                                     │
+│              ❌ Não utiliza Thread Pool                                              │
+│              ❌ Não passa pelo Event Loop                                            │
+│              ❌ Não existe callback                                                  │
+│              ❌ A thread principal fica bloqueada durante toda a operação            │
+│                                                                                     │
+└─────────────────────────────────────────────────────────────────────────────────────┘

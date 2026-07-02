@@ -1,0 +1,88 @@
+================================================================================
+              OPERAÇÕES ASSÍNCRONAS DE ARQUIVO — THREAD POOL
+================================================================================
+
+O fs.writeFile() delega a gravação para uma thread do Thread Pool da libuv,
+que possui 4 threads por padrão.
+
+Fluxo da operação:
+
+    1. A thread executa operações bloqueantes (leitura/gravação de arquivos)
+       e se comunica com o Sistema Operacional
+    2. Quando a operação termina, a thread notifica a libuv
+    3. A libuv disponibiliza o callback para a fase Poll do Event Loop
+    4. O Event Loop envia o callback para o Call Stack, onde ele é executado
+
+
+Thread Pool e fila de espera:
+
+    • Por padrão, o Thread Pool possui apenas 4 threads
+    • Se todas estiverem ocupadas, as próximas operações de I/O não travam
+      o Event Loop — ficam em fila aguardando uma thread disponível
+    • O tamanho pode ser aumentado com a variável de ambiente
+      UV_THREADPOOL_SIZE, quando a aplicação demanda maior paralelismo
+
+
+┌─ Fluxo de execução do fs.writeFile() ───────────────────────────────────────────────┐
+│                                                                                     │
+│                    ┌──────────────────────┐                                         │
+│                    │      Código JS       │                                         │
+│                    └──────────┬───────────┘                                         │
+│                               │                                                     │
+│                               ▼                                                     │
+│                    ┌──────────────────────┐                                         │
+│                    │   V8 (Call Stack)    │                                         │
+│                    └──────────┬───────────┘                                         │
+│                               │                                                     │
+│                               ▼                                                     │
+│                    ┌──────────────────────┐                                         │
+│                    │     libuv (Node)     │                                         │
+│                    └──────────┬───────────┘                                         │
+│                               │                                                     │
+│                               ▼                                                     │
+│                    ┌──────────────────────┐                                         │
+│                    │ Thread Pool (libuv)  │                                         │
+│                    └──────────┬───────────┘                                         │
+│                               │                                                     │
+│                               ▼                                                     │
+│                    ┌──────────────────────┐                                         │
+│                    │ Sistema Operacional  │                                         │
+│                    │ Grava o arquivo      │                                         │
+│                    └──────────┬───────────┘                                         │
+│                               │                                                     │
+│                               ▼                                                     │
+│                    ┌──────────────────────┐                                         │
+│                    │ Thread Pool conclui  │                                         │
+│                    │ a operação           │                                         │
+│                    └──────────┬───────────┘                                         │
+│                               │                                                     │
+│                               ▼                                                     │
+│                    ┌──────────────────────┐                                         │
+│                    │ libuv sinaliza que   │                                         │
+│                    │ o callback está      │                                         │
+│                    │ pronto               │                                         │
+│                    └──────────┬───────────┘                                         │
+│                               │                                                     │
+│                               ▼                                                     │
+│        ┌────────────────────────────────────────────────────────────┐              │
+│        │           Event Loop (libuv)                               │              │
+│        │                                                            │              │
+│        │  timers                                                    │              │
+│        │  pending callbacks                                         │              │
+│        │ ► poll (callback do fs.writeFile)                          │              │
+│        │  check                                                     │              │
+│        │  close callbacks                                           │              │
+│        └──────────────────────┬─────────────────────────────────────┘              │
+│                               │                                                     │
+│                               ▼                                                     │
+│                    ┌──────────────────────┐                                         │
+│                    │   V8 (Call Stack)    │                                         │
+│                    └──────────┬───────────┘                                         │
+│                               │                                                     │
+│                               ▼                                                     │
+│                    ┌──────────────────────┐                                         │
+│                    │ callback executa     │                                         │
+│                    │ console.log(...)     │                                         │
+│                    └──────────────────────┘                                         │
+│                                                                                     │
+└─────────────────────────────────────────────────────────────────────────────────────┘
