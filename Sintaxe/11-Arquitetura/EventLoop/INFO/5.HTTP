@@ -1,0 +1,89 @@
+1) A aplicação chama server.listen(3000).
+
+2) A libuv solicita ao Sistema Operacional:
+   "Abra a porta TCP 3000, coloque-a em modo LISTEN e me notifique quando houver conexões ou dados."
+
+3) O Event Loop continua executando normalmente.
+   Se não houver trabalho para fazer, ele fica aguardando eventos na fase Poll (não fica consumindo CPU).
+
+4) Um cliente envia uma requisição HTTP.
+   O Sistema Operacional recebe os pacotes TCP através do socket associado à porta 3000.
+
+5) O Sistema Operacional notifica a libuv que existe uma conexão ou dados disponíveis naquele socket.
+
+6) Durante a fase Poll, o Event Loop identifica esse evento.
+   A libuv agenda o callback do createServer(), que é executado pelo V8 (Call Stack).
+
+7) Seu código JavaScript processa a requisição e chama res.end() (ou res.write()).
+   A resposta é entregue à libuv.
+
+8) A libuv solicita ao Sistema Operacional que envie os dados pelo socket TCP.
+
+9) O Sistema Operacional transmite os pacotes pela rede e o cliente recebe a resposta HTTP.
+
+================================================================================
+              FLUXO COMPLETO DE UMA REQUISIÇÃO HTTP NO NODE.JS
+================================================================================
+server.listen(3000)
+
+        │
+        ▼
+
++----------------------+
+|      Node.js         |
+|                      |
+|  JavaScript          |
+|      │               |
+|      ▼               |
+|      libuv           |
++----------┬-----------+
+           │
+           │ "Abra a porta 3000 e me avise quando houver eventos."
+           ▼
++----------------------+
+| Sistema Operacional  |
+|                      |
+| Porta 3000 (LISTEN)  |
+| Socket TCP           |
++----------┬-----------+
+           │
+           │ Cliente faz GET /
+           ▼
++----------------------+
+| Sistema Operacional  |
+| Recebe os pacotes    |
++----------┬-----------+
+           │
+           │ Evento: socket pronto
+           ▼
++----------------------+
+| libuv                |
++----------┬-----------+
+           │
+           ▼
++----------------------+
+| Event Loop (Poll)    |
++----------┬-----------+
+           │
+           ▼
++----------------------+
+| V8                   |
+| callback(req, res)   |
+| seu código JS        |
++----------┬-----------+
+           │
+      res.end()
+           │
+           ▼
++----------------------+
+| libuv                |
++----------┬-----------+
+           │
+           ▼
++----------------------+
+| Sistema Operacional  |
+| Envia resposta TCP   |
++----------┬-----------+
+           │
+           ▼
+        Cliente
