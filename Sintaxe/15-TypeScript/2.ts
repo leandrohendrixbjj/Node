@@ -1,15 +1,12 @@
-"use strict";
+// Arrays
 
-console.clear();
+let numeros_1: number[] = [1, 2, 3, 4, 5];
+let letras_1: Array<string> = ["a", "b", "c", "d", "e"];
 
-
-function nomeCapitalizado(nome: string): string {
-  if (!nome) {
-    return "Nome não informado";
-  }
-  return nome.toUpperCase();
+for (let i = 0; i < numeros_1.length; i++) {
+  console.log(numeros_1[i]);
 }
 
-console.log(nomeCapitalizado("João")); 
-
-// console.log(nomeCapitalizado(100)); Error: Argument of type 'number' is not assignable to parameter of type 'string'.console.log(nomeCapitalizado(100)); // Error: Argument of type 'number' is not assignable to parameter of type 'string'.
+for (let i = 0; i < letras_1.length; i++) {
+  console.log(letras_1[i]);
+}

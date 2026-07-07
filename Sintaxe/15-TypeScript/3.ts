@@ -1,12 +1,14 @@
-"use strict";
+// Objetos
 
-console.clear();
+let cliente_1: {
+  nome: string;
+  idade: number;
+  ativo: boolean;  
+} = {
+  nome: "João",
+  idade: 20,
+  ativo: true,
+}
 
-/* JS aceita e TS não aceita:
-  let age = 20;
-  age = "vinte";  
-*/
+console.log(cliente_1);
 
-// Em TS
-let idade: number = 20;
-console.log(idade);

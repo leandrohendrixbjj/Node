@@ -1,10 +1,18 @@
-"use strict";
+/* Os tipos primitivos são:
+  - string
+  - number
+  - boolean
+  - null  
+*/
 
 console.clear();
 
+let nome: string = "João";
+let idade_2: number = 20;
+let ativo: boolean = true;
+let endereco: null = null;
 
-function sum(a: number, b: number): number {
-  return a * b;
-}
-
-console.log(sum(5, 2));
+console.log(nome, typeof nome);
+console.log(idade_2, typeof idade_2);
+console.log(ativo, typeof ativo);
+console.log(endereco, typeof endereco);

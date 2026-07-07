@@ -1,0 +1,23 @@
+O que é TypeScript?
+  - É um sistema de tipagem estática sobre o JavaScript, permitindo detectar erros de tipo antes da execução.
+  - É um superset do JavaScript, permitindo usar todo o código JavaScript existente.    
+
+
+Como o TypeScript funciona?
+
+ - Esse é um conceito muito importante. O navegador não entende TypeScript. Ele entende apenas JavaScript.
+
+ - Então acontece este processo:
+
+    TypeScript
+          │
+          ▼
+    Compilador (tsc)
+          │
+          ▼
+    JavaScript
+          │
+          ▼
+    Navegador / Node.js
+
+    Por isso existe o comando: tsc
