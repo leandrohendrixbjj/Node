@@ -1,0 +1,55 @@
+╔══════════════════════════════════════════════════════════════════╗
+║  Event Loop — Promises e Microtask Queue                         ║
+╚══════════════════════════════════════════════════════════════════╝
+
+┌─ Conceito principal ─────────────────────────────────────────────┐
+│                                                                  │
+│  A Call Stack executa a Promise imediatamente.                   │
+│                                                                  │
+│  O que ela NÃO executa imediatamente é o callback registrado     │
+│  com .then(), .catch() ou .finally().                            │
+│                                                                  │
+│  Mesmo que a Promise já esteja resolvida (Promise.resolve()),    │
+│  o .then() é sempre colocado na Microtask Queue e só é executado  │
+│  quando a Call Stack estiver vazia. É exatamente esse            │
+│  comportamento que garante a previsibilidade do modelo           │
+│  assíncrono do JavaScript.                                       │
+│                                                                  │
+└──────────────────────────────────────────────────────────────────┘
+
+┌─ Fluxo de execução de uma Promise ───────────────────────────────┐
+│                                                                  │
+│                 Código JavaScript                                │
+│                         │                                        │
+│                         ▼                                        │
+│                ┌─────────────────┐                               │
+│                │  Call Stack     │                               │
+│                │ (V8 executa JS) │                               │
+│                └────────┬────────┘                               │
+│                         │                                        │
+│      Promise.resolve().then(callback)                            │
+│                         │                                        │
+│                         ▼                                        │
+│                ┌─────────────────┐                               │
+│                │ Microtask Queue │                               │
+│                │                 │                               │
+│                │  callback()     │                               │
+│                └────────┬────────┘                               │
+│                         │                                        │
+│           Call Stack ficou vazia?                                │
+│                         │                                        │
+│                    Sim ▼                                         │
+│                ┌─────────────────┐                               │
+│                │ Event Loop      │                               │
+│                │ verifica        │                               │
+│                │ Microtasks      │                               │
+│                └────────┬────────┘                               │
+│                         │                                        │
+│                         ▼                                        │
+│                ┌─────────────────┐                               │
+│                │  Call Stack     │                               │
+│                │ executa         │                               │
+│                │ callback()      │                               │
+│                └─────────────────┘                               │
+│                                                                  │
+└──────────────────────────────────────────────────────────────────┘

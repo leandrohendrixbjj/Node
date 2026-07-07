@@ -12,22 +12,19 @@ console.clear();
  *   - Rejected (rejeitada)
  */
 
-const promisePending = new Promise(() => {});
+const pending = new Promise(() => {});
 
-const promiseResolved = new Promise((resolve) => {
-  resolve("Promise resolvida");
+const resolved = new Promise((resolve) => {
+  resolve('Promise resolvida');
 });
 
-const promiseRejected = new Promise((resolve, reject) => {
-  reject("Promise rejeitada");
-});
+const rejected = new Promise((resolve, reject) => {
+  reject('Promise rejeitada');
+})
 
-console.log(promisePending);
+console.log(pending);
+console.log(resolved);
 
-console.log(promiseResolved);
-
-console.log(promiseRejected);
-
-promiseRejected.catch(erro => {
-  console.log("Erro:", erro);
+rejected.catch((error) => {
+  console.log(error);
 });

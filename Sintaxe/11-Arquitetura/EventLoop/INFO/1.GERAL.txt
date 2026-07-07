@@ -38,7 +38,7 @@
 │ └──────┬────────┘                     │ timers (setTimeout)    │  │
 │        │                              │ poll (I/O, HTTP)       │  │
 │        ▼                              │ poll (sockets TCP, fs) │  │
-                                        │ check (setImmediate)   │  │
+|                                       │ check (setImmediate)   │  │
 │ ┌───────────────┐                     │                        │  │
 │ │ Call Stack    │◄────────────────────┤                        │  │
 │ │ (execução)    │                     └────────┬───────────────┘  │
