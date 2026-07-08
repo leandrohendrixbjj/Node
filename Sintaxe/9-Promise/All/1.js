@@ -21,9 +21,7 @@ console.clear();
 
   Essa é uma das otimizações mais simples e eficientes que podemos fazer.
 
-*/
 
-/*
   As promises terminam na order: B, A, C. Mas o resultado é A, B, C. O resultado é retornado assim que todas as 
   promises terminam.
   
@@ -38,7 +36,7 @@ console.clear();
 function esperar(segundos, nome) {
   return new Promise(resolve => {
       setTimeout(() => {
-          console.log(nome);
+        console.log("Executando: " + nome);
           resolve(nome);
       }, segundos * 1000);
   });

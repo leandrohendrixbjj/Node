@@ -1,25 +1,26 @@
+// Promise.all(): Somente retorna o resultado se todas as Promises forem resolvidas.
+
 "use strict";
 
 console.clear();
 
-/*
-  Promise.all(): O comportamento em caso de erro. 
-
-  Para que o Promise.all() retorne o resultado, todas as Promises devem ser resolvidas. Caso uma Promise seja rejeitada,  
-  o Promise.all() retorna o erro da Promise rejeitada.'
-*/
-
 async function executar() { 
   try {
     const resultado = await Promise.all([
-      Promise.resolve("OK 1"),
-      Promise.reject("Erro na Promise 2"),
-      Promise.resolve("OK 2")
+      Promise.resolve("A"),
+      Promise.reject("Grupo de Promises: não será executado"),
+      Promise.resolve("C")
     ]);
-    console.log(resultado);
+    return resultado;
   } catch (erro) {
     console.log(erro);
   }
 }
 
-executar();
+executar().then((data) => {
+  if (data) {
+    console.log(data);
+  }
+}).catch((error) => {
+  console.log(error);
+});
