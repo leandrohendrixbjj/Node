@@ -1,0 +1,102 @@
+O que é Requeue?
+
+  - Significa: coloque essa mensagem de volta na fila para que ela possa ser consumida novamente.
+  - A decisão é tomada pelo Consumer quando ele envia um NACK ou Reject.
+
+
+ACK
+
+  - Quando tudo deu certo.
+  - Exemplo: channel.ack(msg)
+
+  Arquitetura:
+
+        Queue
+          │
+          ▼
+      Consumer
+          │
+          ▼
+         ACK
+          │
+          ▼
+    Mensagem removida da fila
+
+
+NACK com Requeue = true
+
+  - Imagine que o banco de dados ficou indisponível.
+  - Você não quer perder a mensagem.
+  - Exemplo: channel.nack(msg, false, true)
+  - true = devolve a mensagem para a fila.
+
+  - Importante: o RabbitMQ não garante que a mensagem retornará exatamente
+    para a mesma posição da fila. Em ambientes com múltiplos consumidores,
+    ela pode ser reencaminhada rapidamente para outro consumidor.
+
+  Quando usar:
+
+      • Banco indisponível.
+      • API externa retornando 503.
+      • Timeout.
+      • Redis indisponível.
+      • Rede instável.
+      • Esses problemas tendem a desaparecer após algum tempo.
+
+  Quando não usar:
+
+      • Problema permanente.
+      • App fora por período longo (pode aumentar o volume da fila).
+      • Loop infinito de reprocessamento.
+      • A mensagem fica sendo consumida e reenfileirada sem parar,
+        desperdiçando CPU e recursos.
+
+  Arquitetura:
+
+        Queue
+          │
+          ▼
+      Consumer
+          │
+    Erro temporário
+          │
+    NACK (requeue=true)
+          │
+          ▼
+    Queue novamente
+
+
+NACK com Requeue = false
+
+  - O JSON veio completamente inválido.
+  - Não adianta tentar novamente.
+  - Exemplo: channel.nack(msg, false, false)
+  - false = envia a mensagem para Dead Letter Exchange (DLX).
+
+  Arquitetura:
+
+        Queue
+          │
+          ▼
+      Consumer
+          │
+    Erro permanente
+          │
+      NACK (false)
+          │
+          ▼
+         DLX
+          │
+          ▼
+         DLQ
+
+
+Resumindo
+
+  - Em sistemas de produção, é comum evitar o uso de requeue=true como
+    estratégia principal de retry.
+
+  - Em vez disso, utiliza-se uma Retry Queue (com TTL e Dead Letter Exchange)
+    para controlar o tempo entre tentativas e limitar o número de reprocessamentos.
+
+  - Esse padrão é mais previsível e evita loops infinitos.

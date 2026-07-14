@@ -1,0 +1,71 @@
+Producer: qualquer aplicação que publica mensagens em uma Exchange.
+
+  - Exemplos:
+      • Microsserviço Node.js
+      • Aplicação Java
+      • Sistema PHP
+      • Worker Python
+
+Arquitetura do Producer
+
+    Producer
+        │
+    Publica
+        │
+        ▼
+    Exchange
+        │
+        ▼
+    Bindings
+        │
+        ▼
+    Queue
+        │
+        ▼
+    Consumer
+
+
+Responsabilidades:
+
+  - Criar a mensagem.
+  - Definir para qual Exchange enviá-la.
+  - Informar a Routing Key.
+  - Publicar a mensagem.
+
+  - Ele não sabe:
+      • Quem vai consumir.
+      • Qual fila receberá a mensagem.
+      • Quantos consumidores existem.
+      • Quando a mensagem será processada.
+
+  - Tratamento de Erros:
+      • RabbitMQ indisponível.
+      • Falha de conexão.
+      • Timeout.
+      • Falha de autenticação.
+      • Exchange inexistente.
+
+
+Publisher Confirm ( Recurso opcional )
+
+  - Com Publisher Confirm, o Producer pode saber que uma mensagem foi
+    entregue com sucesso.
+
+  - Em sistemas críticos, é recomendável utilizar Publisher Confirms para
+    saber se o broker realmente aceitou a mensagem.
+
+  - Pequeno overhead, porque agora existe uma confirmação do broker antes que o Producer considere a publicação concluída.
+    Esse custo é pequeno quando comparado ao ganho de confiabilidade.
+
+Fluxo com Publisher Confirm
+
+    Producer
+        │
+        ▼
+    RabbitMQ
+        │
+        ▼
+       ACK
+        │
+        ▼
+    Producer

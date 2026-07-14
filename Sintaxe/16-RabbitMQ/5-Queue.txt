@@ -1,0 +1,96 @@
+O que é uma Queue?
+
+  - É uma estrutura de dados gerenciada pelo RabbitMQ.
+
+  - Suas responsabilidades são:
+      • Armazenar mensagens.
+      • Entregá-las aos consumidores.
+      • Controlar seu ciclo de vida.
+
+
+Arquitetura da Queue
+
+    Producer
+        │
+        ▼
+    Exchange
+        │
+        ▼
+      Queue
+        │
+        ▼
+    Consumer
+
+
+Armazenamento de mensagens
+
+  - Mensagens permanecem em uma Queue até acontecer uma destas situações:
+      • O Consumer faz ACK.
+      • A mensagem expira.
+      • Ela é descartada.
+      • Ela vai para uma DLQ (Dead Letter Queue).
+
+
+Vários Consumers
+
+  - Uma fila pode possuir vários consumidores.
+
+              Queue
+           /    │    \
+          ▼     ▼     ▼
+         C1    C2    C3
+
+
+Ordem da Queue
+
+  - FIFO => First In, First Out.
+  - Essa ordem pode mudar se houver vários consumidores para a mesma fila.
+
+
+Configurações importantes
+
+  - Durable (durable: true)
+      • A fila continua existindo após reinicializações do RabbitMQ.
+
+  - Exclusive (para filas temporárias)
+      • Somente a conexão que criou a fila pode utilizá-la.
+
+  - Auto Delete
+      • A fila é removida quando o último consumidor desconecta.
+
+  - TTL
+      • Define o tempo de vida das mensagens na fila.
+
+  - Max Length
+      • Pode limitar a quantidade de mensagens que uma fila possui.
+
+  - Dead Letter Exchange
+      • Recebe mensagens que foram "mortas" (dead-lettered) por uma fila
+        e as roteia para outra fila.
+
+
+Boas práticas
+
+  - Uma Queue deve representar uma responsabilidade.
+  - Evitar filas genéricas (ex: system.queue).
+
+  - Exemplos:
+      • orders.created.queue
+      • payments.queue
+      • emails.queue
+      • notifications.queue
+
+
+Resumindo
+
+  - Producer  → Cria a mensagem.
+  - Exchange  → Decide para onde ela vai.
+  - Binding   → Define as regras de roteamento.
+  - Queue     → Armazena a mensagem até que ela seja processada.
+  - Consumer  → Executa a lógica de negócio e confirma o processamento.
+
+  - A Queue é o componente que torna a comunicação assíncrona.
+    Ela permite que produtores e consumidores trabalhem em ritmos diferentes,
+    absorve picos de carga, evita perda de mensagens durante indisponibilidades
+    temporárias e fornece um ponto confiável de armazenamento até que o
+    processamento seja concluído com sucesso.

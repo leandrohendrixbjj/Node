@@ -1,0 +1,81 @@
+Direct Exchange
+
+    - Entrega apenas para filas cuja Binding Key seja igual à Routing Key.
+    - É a mais simples.
+
+    Exemplo:
+
+      Routing Key = orders.created
+          │
+          ▼
+      Binding  = orders.created
+          │
+          ▼
+        Queue
+
+
+Fanout Exchange
+
+    - Ignora a Routing Key.
+    - Tudo que chega é enviado para todas as filas.
+    - Muito usada para: broadcast, notificações e cache.
+
+    Exemplo:
+
+                Fanout
+            /    │    \
+            ▼     ▼     ▼
+        Queue A  B     C
+
+
+Topic Exchange
+
+    - É a mais usada.
+    - Permite padrões usando curingas (ex: orders.*).
+      Assim, uma única regra pode atender várias Routing Keys.
+
+    Exemplo:
+
+        • orders.created
+        • orders.updated
+        • orders.cancelled
+
+
+Headers Exchange
+
+    - Não usa Routing Key. A decisão é feita pelos headers da mensagem.
+    - É menos utilizada, mas muito flexível.
+
+    Exemplo:
+
+      {
+        region: "BR",
+        priority: "HIGH"
+      }
+
+
+Responsabilidades:
+
+    - Ela faz:
+        • Receber mensagens do Producer.
+        • Consultar os Bindings.
+        • Decidir o destino.
+        • Encaminhar para uma ou mais filas.
+
+    - Ela não faz:
+        • Processar mensagens.
+        • Armazenar mensagens.
+        • Entregar diretamente aos Consumers.
+        • Confirmar processamento (responsabilidade dos ACKs entre Consumer e RabbitMQ).
+
+
+Resumo dos tipos:      
+
+    | Exchange | Como roteia?                     | Caso de uso                       |
+    | -------- | -------------------------------- | --------------------------------- |
+    | Direct   | Igualdade exata da Routing Key   | Mais comum para filas específicas |
+    | Fanout   | Envia para todas as filas        | Broadcast e notificações          |
+    | Topic    | Padrões com curingas (`*` e `#`) | Eventos e microsserviços          |
+    | Headers  | Baseado em headers               | Regras mais complexas             |
+
+

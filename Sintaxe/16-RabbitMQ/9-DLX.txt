@@ -1,0 +1,83 @@
+O que é uma DLX?
+
+  - A Dead Letter Exchange (DLX) é uma Exchange comum que recebe mensagens
+    que se tornaram dead letters.
+  - A DLX não é uma fila. Ela é apenas uma Exchange.
+  - Ela não armazena mensagens.
+  - Ela apenas decide para qual fila a mensagem deve ir.
+
+  Pense na DLX como um "desvio":
+
+              Rodovia Principal
+                    │
+                    ▼
+              orders.queue
+                    │
+              Processamento
+                    │
+             Tudo deu certo?
+              │            │
+             Sim          Não
+              │            ▼
+              │       Desvio (DLX)
+              │            │
+              ▼            ▼
+          Mensagem     orders.dlq
+          removida
+
+
+Por que ela existe?
+
+  - Uma Exchange nunca envia mensagens diretamente para outra Exchange.
+  - Ela sempre publica em filas.
+  - Da mesma forma, uma fila também não envia mensagens diretamente para outra fila.
+
+
+Como uma fila sabe qual DLX usar?
+
+  - "Se uma mensagem desta fila virar um dead letter, publique-a na Exchange orders.dlx."
+
+  Exemplo:
+
+    channel.assertQueue("orders.queue", {
+      durable: true,
+      arguments: {
+        "x-dead-letter-exchange": "orders.dlx"
+      }
+    });
+
+
+Exemplo completo
+
+        Producer
+            │
+            ▼
+      orders.exchange
+            │
+            ▼
+       orders.queue
+            │
+            ▼
+        Consumer
+            │
+      Erro permanente
+            │
+       NACK (false)
+            │
+            ▼
+        RabbitMQ
+            │
+            ▼
+       orders.dlx
+            │
+            ▼
+       orders.dlq
+
+
+Boas práticas
+
+  - A boa prática é compartilhar a DLX e separar as DLQs.
+
+      ✅ Uma DLX para várias filas → muito comum e recomendado.
+      ✅ Uma DLQ para cada fila de negócio → recomendado.
+      ❌ Uma DLQ compartilhada por todas as filas → geralmente não é recomendado.

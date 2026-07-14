@@ -1,0 +1,104 @@
+O que é um Consumer?
+
+  - É a aplicação que fica inscrita em uma Queue aguardando mensagens para processar.
+  - Ele conversa apenas com a Queue.
+  - O RabbitMQ trabalha no modelo Push, ou seja, ele envia mensagens para o Consumer.
+  - O Consumer não fica perguntando: "Tem mensagem?".
+
+
+Arquitetura do Consumer
+
+    Producer
+        │
+        ▼
+    Exchange
+        │
+        ▼
+      Queue
+        │
+        ▼
+    Consumer
+
+
+Responsabilidades
+
+  - Receber a mensagem.
+  - Processar a regra de negócio.
+  - Confirmar o processamento (ACK).
+  - Rejeitar quando necessário (NACK/Reject).
+  - Tratar erros e retries.
+
+
+Unacknowledged
+
+  - Quando uma mensagem saiu da fila para entrega, mas ainda não foi confirmada pelo Consumer.
+
+
+ACK
+
+  - Quando tudo ocorre bem.
+  - O Consumer confirma o processamento da mensagem.
+
+
+NACK (com Requeue)
+
+  - Erro temporário.
+  - Consumer → Error → Volta para a Queue.
+  - Exemplo: channel.nack(msg, false, true)
+
+
+NACK (sem Requeue)
+
+  - Erro permanente.
+  - Consumer → Error → Envia para a DLQ.
+  - Exemplo: channel.nack(msg, false, false)
+
+
+Prefetch
+
+  - Controla o volume de mensagens que o RabbitMQ entrega de uma única vez para o Consumer.
+  - Exemplo: channel.prefetch(5)
+  - Se a aplicação possuir várias instâncias, cada uma recebe o valor definido em Prefetch.
+
+  Exemplo:
+
+                  orders.queue
+                      │
+              ┌───────┴───────┐
+              │               │
+              ▼               ▼
+        Consumer A      Consumer B
+        Prefetch = 5    Prefetch = 5
+
+        5 mensagens     5 mensagens
+        não confirmadas não confirmadas
+
+  - Prefetch = 5
+  - O Consumer recebe 5 mensagens.
+  - O Consumer processa uma delas e envia 1 ACK.
+  - O RabbitMQ entrega apenas 1 nova mensagem, para voltar ao limite de 5 mensagens pendentes.
+
+
+Idempotência
+
+  - O Consumer deve ser idempotente.
+
+  Exemplo:
+
+      1. Consumer processa o pedido 100.
+      2. O ACK se perde por um problema de rede.
+      3. RabbitMQ: não recebeu a confirmação, entrega o pedido 100 novamente.
+      4. Consumer deve rejeitar esse pedido para evitar duplicidade.
+
+
+Boas práticas
+
+  - Um bom Consumer normalmente:
+      • Faz validação da mensagem logo no início.
+      • Usa try/catch para capturar exceções.
+      • Diferencia erros temporários de permanentes.
+      • Envia ACK apenas quando a regra de negócio terminou.
+      • Registra logs e métricas.
+      • É idempotente.
+      • Configura um Prefetch adequado ao tipo de processamento.
+      • Não bloqueia o processamento por operações desnecessárias.

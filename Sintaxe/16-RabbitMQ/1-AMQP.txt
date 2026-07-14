@@ -1,0 +1,57 @@
+O que é AMQP?
+
+  - AMQP (Advanced Message Queuing Protocol) é um protocolo de mensageria,
+    implementado pelo RabbitMQ.
+
+  - Entender AMQP ajuda a compreender como o RabbitMQ funciona internamente.
+
+
+Arquitetura do AMQP
+
+    Producer
+        │
+        ▼
+    Exchange
+        │
+        ▼
+    Binding
+        │
+        ▼
+    Queue
+        │
+        ▼
+    Consumer
+
+
+ Envio: 
+
+   - Quando você envia uma mensagem para o RabbitMQ, você não está enviando diretamente para outro sistema, como ocorre no REST.   
+   
+   - O RabbitMQ atua como intermediário (broker). O produtor envia a mensagem ao broker, que a armazena e a entrega ao 
+      consumidor conforme as regras de roteamento (exchanges, queues e bindings).
+
+Analogia
+
+   - REST + HTTP: fazer uma ligação telefônica. Você precisa que a outra pessoa esteja disponível para responder imediatamente.
+   
+   - RabbitMQ + AMQP: enviar uma carta para uma agência dos Correios. Você entrega a carta ao intermediário (RabbitMQ), 
+      e ele garante que ela seja encaminhada ao destinatário quando possível.     
+
+
+              Caminhão
+                  |
+                  v
+      Centro de Distribuição
+                  |
+      +-----------+-----------+
+      |           |           |
+      v           v           v
+      SP          RJ          MG      
+
+Nesse cenário:
+
+  - Producer → Caminhão que entrega a encomenda.
+  - Exchange → Centro de distribuição.
+  - Binding → Regras que dizem para qual caminhão, cada encomenda deve seguir.
+  - Queue → Caminhões aguardando carga ou centros regionais.
+  - Consumer → Equipe que recebe e processa a encomenda no destino.      

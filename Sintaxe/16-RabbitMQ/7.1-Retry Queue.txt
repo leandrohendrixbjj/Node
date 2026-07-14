@@ -1,0 +1,120 @@
+O papel da Retry Queue
+
+  - Segurar a mensagem durante um determinado tempo.
+
+  Arquitetura:
+
+              Producer
+                  │
+                  ▼
+          orders.exchange
+                  │
+                  ▼
+           orders.queue
+                  │
+               Consumer
+                  │
+      ┌───────────┴───────────┐
+      │                       │
+      ▼                       ▼
+    Sucesso            Falha temporária
+      │                       │
+      ▼                       ▼
+     ACK                 Retry Queue
+                              │
+                          TTL expira
+                              │
+                              ▼
+                        orders.queue
+                              │
+                       Muitas tentativas
+                              │
+                              ▼
+                      Dead Letter Exchange
+                              │
+                              ▼
+                             DLQ
+
+
+Configurações
+
+  - orders.retry.queue
+  - x-message-ttl = 30000
+  - x-dead-letter-exchange = orders.exchange
+
+
+Quando o TTL expira
+
+        Retry Queue
+             │
+        TTL expirou
+             ▼
+    Dead Letter Exchange
+             │
+             ▼
+        orders.exchange
+             │
+             ▼
+         orders.queue
+
+
+Boas práticas
+
+  - Não use requeue=true para erros temporários, pois isso pode criar loops
+    de reprocessamento.
+  - Use Retry Queues para introduzir um intervalo entre tentativas.
+  - Controle explicitamente o número máximo de tentativas (por exemplo, por
+    meio de um header como retry-count).
+  - Após atingir o limite, encaminhe a mensagem para a DLQ para análise ou
+    reprocessamento manual.
+
+
+Importante
+
+  - O RabbitMQ não controla o número de Retry.
+  - Quem deve fazer esse controle é o Consumer, através de um header usando
+    o atributo Retry.
+
+  Arquitetura:
+
+           orders.queue
+                 │
+                 ▼
+             Consumer
+                 │
+        retryCount = 1
+                 │
+                 ▼
+           Retry Queue
+                 │
+            TTL expira
+                 ▼
+           orders.queue
+                 │
+                 ▼
+             Consumer
+                 │
+        retryCount = 2
+                 │
+                 ▼
+           Retry Queue
+                 │
+            TTL expira
+                 ▼
+           orders.queue
+                 │
+                 ▼
+             Consumer
+                 │
+        retryCount = 3
+                 │
+        NACK (requeue=false)
+                 │
+                 ▼
+            RabbitMQ
+                 │
+                 ▼
+            orders.dlx
+                 │
+                 ▼
+            orders.dlq

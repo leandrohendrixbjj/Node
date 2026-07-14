@@ -1,0 +1,46 @@
+O que é uma Exchange? ( é como um "roteador" )
+
+  - Responsável por receber as mensagens dos Producers e decidir para quais filas elas devem ser enviadas.
+
+  - Ela não armazena mensagens.
+
+  - Seu trabalho é apenas rotear.
+
+  - Não conhece os Consumers, apenas conhece as filas.
+
+Arquitetura: 
+
+    Producer
+        |
+        | publica
+        v
+    +------------+
+    |  Exchange  |
+    +------------+
+          |
+          | consulta os Bindings
+          |
+    +-----+-----+
+    |           |
+    v           v
+    Queue A   Queue B
+
+
+Como a Exchange decide o destino?
+
+  - Routing Key enviada pelo Producer.
+  
+  - Bindings configurados.
+
+
+Pode enviar para várias filas:  
+
+             Exchange
+                 |
+      +----------+----------+
+      |          |          |
+      v          v          v
+ Queue A     Queue B    Queue C
+
+
+

@@ -1,0 +1,115 @@
+O que é uma DLQ?
+
+  - A Dead Letter Queue é uma fila para onde são enviadas mensagens que não
+    puderam ser processadas.
+  - Pense nela como uma "área de quarentena".
+
+  Arquitetura:
+
+              Producer
+                  │
+                  ▼
+          orders.exchange
+                  │
+                  ▼
+           orders.queue
+                  │
+                  ▼
+              Consumer
+                  │
+                  ├── ACK
+                  │      │
+                  │      ▼
+                  │   Mensagem removida
+                  │
+                  └── Erro
+                         │
+                         ▼
+                     orders.dlx
+                         │
+                         ▼
+                     orders.dlq
+
+
+Quando uma mensagem vai para a DLQ
+
+  - Consumer faz NACK sem requeue (channel.nack(msg, false, false)).
+  - A mensagem expirou (TTL).
+  - A fila atingiu o limite.
+  - Limite de tamanho em bytes.
+
+
+O que existe dentro da DLQ?
+
+  - Exatamente a mesma mensagem.
+  - O RabbitMQ apenas adiciona alguns headers.
+
+  Exemplo:
+
+    {
+      "x-death": [
+        {
+          "queue": "orders.queue",
+          "reason": "rejected",
+          "count": 1
+        }
+      ]
+    }
+
+
+O que fazer com mensagens na DLQ?
+
+  - Analisar manualmente.
+  - Reprocessamento automático.
+  - Apenas armazenar (enviar para banco de dados de logs).
+
+
+Uma boa prática de arquitetura
+
+              Producer
+                  │
+                  ▼
+          orders.exchange
+                  │
+                  ▼
+           orders.queue
+                  │
+               Consumer
+                  │
+      ┌───────────┴───────────┐
+      │                       │
+      ▼                       ▼
+    Sucesso            Falha temporária
+      │                       │
+      ▼                       ▼
+     ACK                 Retry Queue
+                              │
+                          TTL expira
+                              │
+                              ▼
+                        orders.queue
+                              │
+                       Muitas tentativas
+                              │
+                              ▼
+                      Dead Letter Exchange
+                              │
+                              ▼
+                             DLQ
+
+
+Boas práticas
+
+  - Monitore o tamanho da DLQ. Uma DLQ crescendo continuamente é sinal de problema.
+  - Nunca ignore mensagens na DLQ; elas representam dados que deixaram de ser processados.
+  - Registre logs com o motivo da falha e preserve o cabeçalho x-death.
+  - Não use a DLQ como mecanismo de retry. Ela deve ser o destino final após
+    esgotar as tentativas ou quando houver um erro permanente.
+
+
+Uma DLQ para cada fila (recomendado)
+
+  - Isolamento.
+  - Mensagens não ficam misturadas (ex: Pagamentos com E-mails).
+  - Reprocessamento simples: você pode criar um consumidor específico.
+  - Facilita o monitoramento dos dados.

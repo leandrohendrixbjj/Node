@@ -1,0 +1,52 @@
+O que é um Binding
+
+  - Regra que conecta uma Exchange a uma Queue.
+  - Ele diz ao RabbitMQ: Se uma mensagem atender a esta condição, encaminhe-a para esta fila."
+
+                Exchange
+                    |
+          +---------+---------+
+          |                   |
+      Binding A          Binding B
+          |                   |
+          v                   v
+      Queue A             Queue B
+
+O Binding muda conforme o tipo da Exchange:
+
+  - Direct Exchange: Compara igualdade ( Binding: order.created, Routing key: order.created )
+
+  - Fanout Exchange: Não usa Binding Key. Toda mensagem é enviada para todas as filas conectadas.
+
+  - Topic Exchange: Usa curingas: ( orders.* ) => Aceita order.created; order.updated....
+
+
+Responsabilidades:
+
+  - Ele não produz mensagens, não consome mensagens e não armazena mensagens.
+  - Ele apenas define as regras de encaminhamento.
+  - Esta Queue deve receber mensagens desta Exchange quando determinada regra for atendida.
+
+
+                    Producer
+                      |
+                      | Publica mensagem
+                      v
+                +-------------+
+                |  Exchange   |
+                +-------------+
+                      |
+          Consulta os Bindings
+                      |
+      +---------------+---------------+
+      |                               |
+ Binding:                    Binding:
+ orders.created              orders.cancelled
+      |                               |
+      v                               v
++-------------+                 +-------------+
+| orders.queue|                 | cancel.queue|
++-------------+                 +-------------+
+      |                               |
+      v                               v
+ Consumer A                     Consumer B
