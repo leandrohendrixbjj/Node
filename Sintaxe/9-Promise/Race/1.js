@@ -1,18 +1,21 @@
 /**
  * Promise.race()
  *
- * Costuma causar confusão porque o nome sugere que a primeira Promise resolvida vence a corrida. Na verdade, não é isso.
+ * Costuma causar confusão porque o nome sugere que a primeira Promise resolvida vence a corrida. 
+ * Na verdade, não é isso.
  *
  * A definição correta é: a primeira Promise que sair do estado pending vence, independentemente de ela ser 
  * fulfilled (resolve) ou rejected (reject)
  * 
  * Como funciona internamente;
- * P1 ───────────── resolve (3s)
+ * P1 ───────────── pending (3s)
  * P2 ───── reject (1s)
- * P3 ───────── resolve (2s)
- * 
+  * 
  * O resultado é P2, porque é a primeira Promise que sai do estado pending. Mesmo sendo um erro (reject).
+ * Importante resaltar que a P1 será executada, mas seu valor não será usado.
  * 
+ * A promise Race não controla a execução das promises, apenas controla quem vence a corrida. Ou seja
+ * se a P1 efetua uma alteração no banco de dados, essa alteração será persistida.
  * 
  */
 "use strict";

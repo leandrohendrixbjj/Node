@@ -27,16 +27,13 @@
 console.clear();
 
 const p1 = Promise.resolve("Usuário encontrado");
-const p2 = Promise.reject("Notificações do usuário não encontradas");
+const p2 = Promise.reject("Erro no envio de Notificações");
 const p3 = Promise.resolve("Pedidos do usuário encontrados");
 
 Promise.allSettled([p1, p2, p3])
-.then((results) => { 
-  results.forEach(item => {
-    if (item.status === "fulfilled") {
-      console.log("Sucesso:", item.value);
-    } else {
-      console.log("Erro:", item.reason);
-    }
-  });
+.then((results) => {
+  console.log(results);
+})
+.catch((error) => {
+  console.error(error);
 });
