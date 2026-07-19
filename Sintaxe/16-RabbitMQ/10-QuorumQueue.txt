@@ -1,0 +1,87 @@
+O que é uma Quorum Queue?
+
+  - Uma Quorum Queue é uma fila replicada entre vários nós do cluster RabbitMQ.
+  - Ela utiliza o algoritmo Raft Consensus para manter todas as réplicas sincronizadas.
+
+  - O objetivo é garantir:
+      • Alta disponibilidade.
+      • Tolerância a falhas.
+      • Consistência dos dados.
+
+
+Sem Quorum Queue
+
+  - Se o Node A cair, a fila fica indisponível.
+
+      RabbitMQ Cluster
+
+         Node A
+            │
+        orders.queue
+
+
+Com Quorum Queue
+
+  - Os três nós possuem uma cópia da fila.
+  - Se o Node A cair, o Raft elege outro líder (exemplo: Node B).
+  - O Leader envia uma réplica para os followers.
+
+      RabbitMQ Cluster
+         Node A
+         Node B
+         Node C
+       orders.queue
+
+  Arquitetura:
+
+          Producer
+            │
+            ▼
+        Leader Queue
+          (Node A)
+          /      \
+         /        \
+        ▼          ▼
+     Follower    Follower
+     (Node B)    (Node C)
+
+
+Performance
+
+  - A escrita é um pouco mais lenta do que em uma Classic Queue.
+  - Em compensação, é muito mais segura e confiável.
+  - A Quorum Queue garante que a fila continue disponível e que as mensagens
+    não sejam perdidas mesmo com falhas de nós no cluster.
+
+
+O que pode ser usado com Quorum Queue
+
+  - DLQ
+  - Retry Queue
+  - Prefetch
+  - DLX
+
+  Arquitetura típica:
+
+                Producer
+                   │
+                   ▼
+             Quorum Queue
+                   │
+                Consumer
+                   │
+      ┌────────────┴────────────┐
+      │                         │
+      ▼                         ▼
+    Sucesso              Retry Queue
+      │                         │
+      ▼                         ▼
+     ACK                   TTL expira
+                                │
+                                ▼
+                          Quorum Queue
+                                │
+                     Limite de tentativas
+                                │
+                                ▼
+                               DLQ
