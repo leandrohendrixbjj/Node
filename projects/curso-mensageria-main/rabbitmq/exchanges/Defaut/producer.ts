@@ -1,31 +1,28 @@
 import { randomUUID } from 'crypto';
-import { Timestamp } from '../in-memory/domain/timestamp.ts';
-import { criarBroker } from './client.factory.ts';
+import { Timestamp } from '../../../in-memory/domain/timestamp.ts';
+import { criarBroker } from '../../client.factory.ts';
 import { createMessage } from './message.ts';
 
 async function produce(order: number) {
   const client = await criarBroker(process.env.CONNECTION_STRING as string);
-  const fila = 'tasks';
+  const fila = 'q.default';
   const message = createMessage(order);
 
-  const canal = await client.createChannel();
+  const canal = await client.createConfirmChannel();
   await canal.assertQueue(fila);
 
   canal.sendToQueue(fila, Buffer.from(JSON.stringify(message)), {
     // Properties (AMQP)
     persistent: true,
-    contentType: 'application/json',
-    messageId: randomUUID().toString(),
-    correlationId: message.order.toString(),
+    contentType: 'application/json',    
+    correlationId: message.messageId,
     expiration: '60000',
     priority: 0,
-
-    
 
     // Headers (AMQP)
     headers: {
       eventName: 'order.created',
-      producer: 'my-producer',
+      producer: 'my-first-producer',
       version: '1.0.0',
       replyTo: '1',
       traceId: randomUUID().toString(),
@@ -33,7 +30,8 @@ async function produce(order: number) {
     },
   });
 
-  console.log('📨 Mensagem enviada: %o', message);
+  await canal.waitForConfirms();
+  console.log('✅ Mensagem confirmada pelo broker: %o', message);
 
   await canal.close();
   process.exit(0);
