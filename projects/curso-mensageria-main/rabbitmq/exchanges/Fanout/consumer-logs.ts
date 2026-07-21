@@ -10,7 +10,9 @@ import type { Message } from './message.ts';
 
 export async function consume() {
   const client = await criarBroker(process.env.CONNECTION_STRING as string);
-  const fila = 'q.send-emails';
+  
+  // Alterado para refletir a fila correta que criamos vinculada à exchange fanout
+  const fila = 'q.tickets.logs';  
 
   const canal = await client.createChannel();
   await canal.assertQueue(fila);
@@ -27,7 +29,7 @@ export async function consume() {
         const message = JSON.parse(msg.content.toString()) as Message;
         console.debug(chalk.green('✅ Mensagem recebida: %o'), message);
         
-        // Acknowledge: confirma que a mensagem foi processada com sucesso. ( Respeita o Prefetch   )
+        // Acknowledge: confirma que a mensagem foi processada com sucesso. ( Respeita o Prefetch )
         canal.ack(msg);
       }
     },

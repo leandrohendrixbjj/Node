@@ -3,27 +3,32 @@ import { Timestamp } from '../../../in-memory/domain/timestamp.ts';
 import { criarBroker } from '../../client.factory.ts';
 import { createMessage } from './message.ts';
 
-async function produce(destination: string) {
+async function produce() {
   const client = await criarBroker(process.env.CONNECTION_STRING as string);
  
-  const fila = 'q.send-emails';
-  const message = createMessage(destination);
+  // Alterado para o nome correto da Exchange do tipo fanout
+  const exchangeName = 'tickets.fanout';
+  const message = createMessage();
 
   const canal = await client.createConfirmChannel();
-  await canal.assertQueue(fila);
+  
+  // Garantimos que a exchange existe (opcional se já foi criada pela UI, mas boa prática)
+  await canal.assertExchange(exchangeName, 'fanout', { durable: true });
 
-  canal.sendToQueue(fila, Buffer.from(JSON.stringify(message)), {
+  // O publish envia para a EXCHANGE, e não mais para uma fila diretamente.
+  // O segundo argumento é a routing key (''), que a exchange fanout ignora.
+  canal.publish(exchangeName, '', Buffer.from(JSON.stringify(message)), {
     // Properties (AMQP)
     persistent: true,
     contentType: 'application/json',    
-    correlationId: message.emailMessageId,
+    correlationId: message.ticketId,
     expiration: '60000',
     priority: 0,
 
     // Headers (AMQP)
     headers: {
-      eventName: 'email.sent',
-      producer: 'send-emails-producer',
+      eventName: 'ticket.created',
+      producer: 'tickets-fanout-producer',
       version: '1.0.0',
       replyTo: '1',
       traceId: randomUUID().toString(),
@@ -32,7 +37,7 @@ async function produce(destination: string) {
   });
 
   await canal.waitForConfirms();
-  console.log('✅ Mensagem confirmada pelo broker: %o', message);
+  console.log('✅ Mensagem confirmada pelo broker na exchange fanout: %o', message);
 
   await canal.close();
   process.exit(0);
@@ -45,4 +50,4 @@ if (Number.isNaN(emailFromArgs)) {
   process.exit(1);
 }
 
-await produce('ana@gmail.com');
+await produce();
