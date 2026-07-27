@@ -1,7 +1,13 @@
 /**
  * Prefetch — limita quantas mensagens o Rabbit envia por vez.
  * Ex.: `prefetch(1)` → só entrega a próxima depois do `ack` da atual.
- * 
+ *
+ * Direct exchange:
+ *   Exchange   : e.tickets
+ *   Queue      : q.ticket.emails
+ *   RoutingKey : ticket.emails
+ *
+ *   Producer → e.tickets (ticket.emails) → q.ticket.emails → Consumer
  */
 
 import chalk from 'chalk';
@@ -10,14 +16,23 @@ import type { Message } from './message.ts';
 
 export async function consume() {
   const client = await criarBroker(process.env.CONNECTION_STRING as string);
-  const fila = 'q.send-emails';
-  const maxRetries = 3;
+
+  const exchange = 'e.tickets';
+  const fila = 'q.ticket.emails';
+  const routingKey = 'ticket.emails';
 
   const canal = await client.createChannel();
   await canal.prefetch(1);
 
-  console.debug(chalk.blue('🚀 Aguardando mensagens na fila: %s'), fila);
+  console.debug(
+    chalk.blue('🚀 Aguardando mensagens | exchange=%s | queue=%s | rk=%s'),
+    exchange,
+    fila,
+    routingKey,
+  );
 
+  // Consome da fila (não da exchange/routing key).
+  // A fila q.ticket.emails deve estar bound em e.tickets com routing key ticket.emails.
   canal.consume(
     fila,
     async (msg) => {
@@ -27,54 +42,18 @@ export async function consume() {
       }
 
       const message = JSON.parse(msg.content.toString()) as Message;
-      const headers = msg.properties.headers || {};
-      const retryCount = (headers['x-retry-count'] as number) || 0;
 
       try {
-        console.debug(chalk.green('✅ Mensagem recebida (Tentativa %d de %d): %o'), retryCount + 1, maxRetries + 1, message);
-        
-        // Simulação de processamento (jogue um erro aqui para testar o retry)
-        //throw new Error('Falha no processamento do pedido de supply');
-
-        // Acknowledge: confirma que a mensagem foi processada com sucesso.
+        console.debug(chalk.green('✅ Mensagem recebida: %o'), message);
         canal.ack(msg);
       } catch (error: any) {
         console.error(chalk.red('❌ Erro ao processar mensagem: %s'), error.message);
-
-        if (retryCount >= maxRetries) {
-          console.error(chalk.bgRed.white(' 🚨 Número máximo de retries (%d) atingido. Descartando mensagem (ou enviando para DLQ). '), maxRetries);
-          
-          // Como atingiu o limite, damos ack para retirá-la da fila principal 
-          // (se preferir salvar, você poderia enviá-la para uma DLQ final antes do ack)
-          canal.sendToQueue(filaDlq, msg.content, {
-            ...msg.properties,
-            headers: {
-              ...headers,
-              'x-retry-count': retryCount,
-            },
-          });
-          canal.ack(msg);
-        } else {
-          const nextRetryCount = retryCount + 1;
-          console.warn(chalk.yellow('⚠️ Enviando para a fila de retry (Próxima tentativa será a %d)...'), nextRetryCount + 1);
-
-          // Publica diretamente na fila de retry com o header atualizado
-          canal.sendToQueue(filaRetry, msg.content, {
-            ...msg.properties,
-            headers: {
-              ...headers,
-              'x-retry-count': nextRetryCount,
-            },
-          });
-
-          // Confirma a mensagem atual na fila principal para tirá-la de lá
-          canal.ack(msg);
-        }
+        // requeue=true → devolve a mensagem para a fila
+        canal.nack(msg, false, true);
       }
     },
-    {
-      noAck: false,
-    },
+    // noAck: false → mensagens Unacknowledged são reenviadas se o consumidor cair
+    { noAck: false },
   );
 }
 

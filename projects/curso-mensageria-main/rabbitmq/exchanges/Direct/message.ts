@@ -1,15 +1,15 @@
 import { randomInt, randomUUID } from "crypto";
 
 export type Message = {
-  order: number;
+  destination: string;
   title: string;
   messageId: string;
 };
 
 export function createMessage(order: number): Message {
-  return {    
-    order: randomInt(1, 100),
-    title: 'Pedido de supply',
+  return {        
+    destination: 'ana@gmail.com',
+    title: 'Email de ticket',
     messageId: randomUUID().toString(),
   };
 }
