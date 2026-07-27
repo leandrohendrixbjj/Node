@@ -9,7 +9,7 @@ export type Message = {
 export function createMessage(order: number): Message {
   return {    
     order: randomInt(1, 100),
-    title: 'Pedido de venda',
+    title: 'Pedido de supply',
     messageId: randomUUID().toString(),
   };
 }
