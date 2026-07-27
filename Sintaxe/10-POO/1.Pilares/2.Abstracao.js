@@ -6,7 +6,7 @@
  * └──────────────────────────────────────────────────────────────────────────┘
  *
  *  A abstração é um dos pilares da POO: esconder a complexidade e expor só o
- *  que importa para quem usa a classe ou o módulo.
+ *  que é relevante para quem usa o objeto.
  *
  *  Na prática
  *  ───────────
