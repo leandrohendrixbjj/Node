@@ -31,11 +31,21 @@ Fanout Exchange
 Topic Exchange
 
     - É a mais usada.
-    - Permite padrões usando curingas (ex: orders.*).
-      Assim, uma única regra pode atender várias Routing Keys.
+    - Permite padrões usando curingas (ex: orders.* ou orders.#).
+    
+    - .* => Uma Exchange: orders.topic Queue: q.orders.sales Routing key: orders.sales.*
+             orders.sales.create
+             orders.sales.update
+             orders.supply.create => não aceita.
+    
+    - .# => Uma Exchange: orders. Queue: q.orders Routing key: orders.#
+             orders.created
+             orders.supply.create
+             order.user.update
+             
+    - Assim, uma única regra pode atender várias Routing Keys.
 
     Exemplo:
-
         • orders.created
         • orders.updated
         • orders.cancelled
