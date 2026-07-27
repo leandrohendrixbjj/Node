@@ -10,7 +10,9 @@ import type { Message } from './message.ts';
 
 export async function consume() {
   const client = await criarBroker(process.env.CONNECTION_STRING as string);
-  const fila = 'q.default';
+  
+  // 1. Ajustado para refletir a fila correta de pedidos
+  const fila = 'q.orders';  
 
   const canal = await client.createChannel();
   await canal.assertQueue(fila);
@@ -27,13 +29,12 @@ export async function consume() {
         const message = JSON.parse(msg.content.toString()) as Message;
         console.debug(chalk.green('✅ Mensagem recebida: %o'), message);
         
-        // Acknowledge: confirma que a mensagem foi processada com sucesso. ( Respeita o Prefetch   )
+        // Acknowledge: confirma que a mensagem foi processada com sucesso. (Respeita o Prefetch)
         canal.ack(msg);
       }
     },
     {
       // noAck: Garante que mensagens com estado de Unacknowledged (não confirmadas) serão reenviadas caso o consumidor falhar.
-      // Sem esse parâmetro existe um risco de perder mensagens que estão em um estado de Unacknowledged se o consumidor falhar.
       noAck: false,
     },
   );
