@@ -6,8 +6,8 @@ import { createMessage } from './message.ts';
 async function produce(order: number) {
   const client = await criarBroker(process.env.CONNECTION_STRING as string);
 
-  const exchange = 'pedido.events.exchange';
-  const routingKey = 'pedido.criado';
+  const exchange = 'e.pedido';
+  const routingKey = 'pedido.compras';
 
   const message = createMessage(order);
 
@@ -32,7 +32,7 @@ async function produce(order: number) {
 
       // Headers da aplicação
       headers: {
-        producer: 'producer.supply',
+        producer: 'producer.pedido',
         version: '1.0.0',
         traceId: randomUUID(),
         timestamp: Timestamp.now('America/Sao_Paulo'),

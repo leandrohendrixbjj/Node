@@ -62,9 +62,9 @@ import type { Message } from './message.ts';
 
 export async function consume() {
   const client = await criarBroker(process.env.CONNECTION_STRING as string);
-  const fila = 'q.pedido.supply';
-  const filaRetry = 'q.pedido.supply.retry';
-  const filaDlq = 'q.pedido.supply.dlq';
+  const fila = 'q.pedido.compras';
+  const filaRetry = 'q.pedido.compras.retry';
+  const filaDlq = 'q.pedido.compras.dlq';
   const maxRetries = 3;
 
   const canal = await client.createChannel();
@@ -88,10 +88,10 @@ export async function consume() {
         console.debug(chalk.green('✅ Mensagem recebida (Tentativa %d de %d): %o'), retryCount + 1, maxRetries + 1, message);
         
         // Simulação de processamento (jogue um erro aqui para testar o retry)
-        //throw new Error('Falha no processamento do pedido de supply');
+        throw new Error('Falha no processamento do pedido de supply');
 
         // Acknowledge: confirma que a mensagem foi processada com sucesso.
-        canal.ack(msg);
+        //canal.ack(msg);
       } catch (error: any) {
         console.error(chalk.red('❌ Erro ao processar mensagem: %s'), error.message);
 
