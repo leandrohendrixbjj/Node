@@ -3,22 +3,19 @@
  * Ex.: `prefetch(1)` → só entrega a próxima depois do `ack` da atual.
  * 
  * Criamos uma Exchange do tipo Direct
- *    - Pedido.events.exchange
- *    - Routing Key: pedido.criado
+ *    - e.mensageria
+ *    - Routing Key: direct.key
  * 
- * Criamos uma Exchange do tipo Direct
- *    - pedido.events.retry.exchange
- *    - Routing Key: ND
+  
+ * Criamos uma Queue: q.direct
+ *    -  Bindings: e.mensageria -> direct.key
  * 
- * Criamos uma Queue: q.pedido.supply
- *    -  Bindings: pedido.events.exchange -> pedido.criado
- * 
- * Criamos uma Queue: q.pedido.supply.retry
+ * Criamos uma Queue: q.direct.retry
  *    - x-message-ttl = 60000 => Tempo de vida da mensagem na fila de retry
- *    - x-dead-letter-exchange = pedido.events.exchange => Exchange de destino da mensagem
- *    - x-dead-letter-routing-key = pedido.criado => Routing Key de destino da mensagem
+ *    - x-dead-letter-exchange = e.mensageria => Exchange de destino da mensagem
+ *    - x-dead-letter-routing-key = direct.key => Routing Key de destino da mensagem
  * 
- * Criamos uma Queue: q.pedido.supply.dlq
+ * Criamos uma Queue: q.direct.dlq
  *    - Bindings: Não possui bindings
  *    - Obs: quem deve publicar dados nessa queue é consumer com base em x-retry-count. Que deve ficar como atributo
  *      dentro do header da mensagem.
@@ -58,17 +55,25 @@
 
 import chalk from 'chalk';
 import { criarBroker } from '../../../client.factory.ts';
-import type { Message } from './message.ts';
+import { directConfig } from '../config.ts';
 
 export async function consume() {
   const client = await criarBroker(process.env.CONNECTION_STRING as string);
-  const fila = 'q.pedido.compras';
-  const filaRetry = 'q.pedido.compras.retry';
-  const filaDlq = 'q.pedido.compras.dlq';
-  const maxRetries = 3;
+  const { queue, retryQueue, dlqQueue, maxRetries, LIGAR_TESTE_RETRY_DLQ } = directConfig;
+  
+  // Recebe os nomes das filas
+  const fila = queue.name;
+  const filaRetry = retryQueue.name;
+  const filaDlq = dlqQueue.name;
 
   const canal = await client.createChannel();
   await canal.prefetch(1);
+
+  // Cria a fila de retry
+  await canal.assertQueue(retryQueue.name, retryQueue.options);
+
+  // Cria a fila de DLQ
+  await canal.assertQueue(dlqQueue.name, dlqQueue.options);
 
   console.debug(chalk.blue('🚀 Aguardando mensagens na fila: %s'), fila);
 
@@ -80,7 +85,7 @@ export async function consume() {
         return;
       }
 
-      const message = JSON.parse(msg.content.toString()) as Message;
+      const message = JSON.parse(msg.content.toString());
       const headers = msg.properties.headers || {};
       const retryCount = (headers['x-retry-count'] as number) || 0;
 
@@ -88,12 +93,15 @@ export async function consume() {
         console.debug(chalk.green('✅ Mensagem recebida (Tentativa %d de %d): %o'), retryCount + 1, maxRetries + 1, message);
         
         // Simulação de processamento (jogue um erro aqui para testar o retry)
-        throw new Error('Falha no processamento do pedido de supply');
-
-        // Acknowledge: confirma que a mensagem foi processada com sucesso.
-        //canal.ack(msg);
+        if (LIGAR_TESTE_RETRY_DLQ) {
+          throw new Error('Falha no processamento do pedido de supply');
+        } else {
+          // Acknowledge: confirma que a mensagem foi processada com sucesso.
+          canal.ack(msg, true);
+          console.debug(chalk.green('✅ Mensagem processada com sucesso'));
+        }
       } catch (error: any) {
-        console.error(chalk.red('❌ Erro ao processar mensagem: %s'), error.message);
+        console.error(chalk.red('❌ Teste de error no processamento da mensagem: %s'), error.message);
 
         if (retryCount >= maxRetries) {
           console.error(chalk.bgRed.white(' 🚨 Número máximo de retries (%d) atingido. Descartando mensagem (ou enviando para DLQ). '), maxRetries);
