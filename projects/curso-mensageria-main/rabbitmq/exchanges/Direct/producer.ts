@@ -1,25 +1,26 @@
-import { randomUUID } from 'crypto';
+import { randomInt, randomUUID } from 'crypto';
 import { Timestamp } from '../../../in-memory/domain/timestamp.ts';
 import { criarBroker } from '../../client.factory.ts';
-import { createMessage } from './message.ts';
+import { directConfig } from './config.ts';
 
-async function produce(order: number) {
+async function produce(event: string) {
   const client = await criarBroker(process.env.CONNECTION_STRING as string);
 
-  const exchange = 'e.tickets';
-  const routingKey = 'ticket.emails';
-
-  const message = createMessage(order);
+  const message = {
+    messageId: randomUUID(),
+    orderId: randomInt(0, 201), // 0..200
+    timestamp: Timestamp.now('America/Sao_Paulo'),
+  };
 
   const canal = await client.createConfirmChannel();
+  const { exchange, queue, routingKey } = directConfig;
 
-  // Garante que a exchange exista
-  await canal.assertExchange(exchange, 'direct', {
-    durable: true,
-  });
+  await canal.assertExchange(exchange.name, exchange.type, exchange.options);
+  await canal.assertQueue(queue.name, queue.options);
+  await canal.bindQueue(queue.name, exchange.name, routingKey);
 
   const published = canal.publish(
-    exchange,
+    exchange.name,
     routingKey,
     Buffer.from(JSON.stringify(message)),
     {
@@ -33,12 +34,13 @@ async function produce(order: number) {
       // Headers da aplicação
       headers: {
         producer: 'producer.tickets',
+        event: event,
         version: '1.0.0',
         traceId: randomUUID(),
         timestamp: Timestamp.now('America/Sao_Paulo'),
         'x-retry-count': 0,
       },
-    }
+    },
   );
 
   if (!published) {
@@ -49,7 +51,7 @@ async function produce(order: number) {
   await canal.waitForConfirms();
 
   console.log('✅ Mensagem publicada com sucesso');
-  console.log(`Exchange : ${exchange}`);
+  console.log(`Exchange : ${exchange.name}`);
   console.log(`RoutingKey: ${routingKey}`);
   console.log(message);
 
@@ -57,8 +59,6 @@ async function produce(order: number) {
   await client.close();
 }
 
-// Ordem dinâmica via argumento:
-// npm run producer -- 10
 const orderFromArgs = Number(process.argv.at(2) ?? 1);
 
 if (Number.isNaN(orderFromArgs)) {
@@ -66,4 +66,4 @@ if (Number.isNaN(orderFromArgs)) {
   process.exit(1);
 }
 
-await produce(orderFromArgs);
+await produce('Queue.model.type.direct');
