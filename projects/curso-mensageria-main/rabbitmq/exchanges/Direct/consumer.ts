@@ -12,7 +12,7 @@ export async function consume() {
   const { exchange, queue, routingKey } = directConfig;
 
   const canal = await client.createChannel();
-  await canal.prefetch(1);
+  await canal.prefetch(directConfig.prefetch);
 
   console.debug(
     chalk.blue('🚀 Aguardando mensagens | exchange=%s | queue=%s | rk=%s'),

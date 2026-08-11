@@ -42,4 +42,5 @@ export const directConfig = {
   routingKey: ROUTING_KEY,
   maxRetries: 3,
   LIGAR_TESTE_RETRY_DLQ: true,
+  prefetch: 1,
 } as const;

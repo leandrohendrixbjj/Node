@@ -33,7 +33,7 @@ async function produce(event: string) {
 
       // Headers da aplicação
       headers: {
-        producer: 'producer.tickets',
+        producer: 'producer.direct',
         event: event,
         version: '1.0.0',
         traceId: randomUUID(),
