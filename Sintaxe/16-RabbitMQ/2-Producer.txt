@@ -1,4 +1,4 @@
-Producer: qualquer aplicação que publica mensagens em uma Exchange.
+Producer: Aplicação que envia mensagens para o broker.
 
   - Exemplos:
       • Microsserviço Node.js

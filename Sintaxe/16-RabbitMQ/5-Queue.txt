@@ -1,6 +1,6 @@
 O que é uma Queue?
 
-  - É uma estrutura de dados gerenciada pelo RabbitMQ.
+  - Um buffer dentro do broker que armazena as mensagens.
 
   - Suas responsabilidades são:
       • Armazenar mensagens.

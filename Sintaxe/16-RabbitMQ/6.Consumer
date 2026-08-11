@@ -1,7 +1,6 @@
-O que é um Consumer?
+O que é um Consumer:
 
-  - É a aplicação que fica inscrita em uma Queue aguardando mensagens para processar.
-  - Ele conversa apenas com a Queue.
+  - Aplicação que recebe mensagens do broker.
   - O RabbitMQ trabalha no modelo Push, ou seja, ele envia mensagens para o Consumer.
   - O Consumer não fica perguntando: "Tem mensagem?".
 

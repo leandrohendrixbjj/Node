@@ -1,7 +1,6 @@
 O que é AMQP?
 
-  - AMQP (Advanced Message Queuing Protocol) é um protocolo de mensageria,
-    implementado pelo RabbitMQ.
+  - Protocolo principal usado pelo RabbitMQ para comunicação de mensagens.
 
   - Entender AMQP ajuda a compreender como o RabbitMQ funciona internamente.
 
