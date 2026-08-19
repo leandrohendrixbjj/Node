@@ -4,11 +4,11 @@
 
 ┌─ Visão geral ────────────────────────────────────────────────────┐
 │                                                                   │
-│  O Node.js é composto por três partes principais:                │
+│  O Node.js é composto por três partes principais:                 │
 │                                                                   │
 │    • V8          →  executa TODOS OS JavaScript                   │
-│    • libuv       →  gerencia I/O assíncrono e Event Loop          │
-│    • APIs Node   →  http, fs, timers, etc.                      │
+│    • libuv       →  fornece a infraestrutura de I/O assíncrono    │
+│    • APIs Node   →  http, fs, timers, etc.                        │
 │                                                                   │
 └───────────────────────────────────────────────────────────────────┘
 
@@ -50,33 +50,39 @@
 │                                                                  │
 └──────────────────────────────────────────────────────────────────┘
 
-I/O         → operações de entrada e saída
-HTTP        → requisições/respostas de rede
-fs          → sistema de arquivos (File System)
-sockets TCP → conexões de rede TCP (banco, APIs, servidores)
+Obs: No Node.js temos a Next Tick Queue, controlada pelo Node.js, e a Microtask Queue, gerenciada pelo V8. 
+     Ambas têm prioridade sobre o avanço normal do Event Loop.
+
+I/O → operações de entrada e saída ( FS )
+HTTP → requisições/respostas de rede
+sockets → conexões de rede TCP (banco, APIs, servidores)
+setImmediate → Executa depois que EventLoop termina a fase de IO. Podemos usar setImmediate() depois que o I/O terminou, 
+               para agendar outro trabalho:
+               
 
 Fase em que a Libuv usar o Event Loop
-                ┌──────────────────────┐
-                │      EVENT LOOP      │
-                └─────────┬────────────┘
-                          │
-        ┌─────────────────┼─────────────────┐
-        ▼                 ▼                 ▼
 
-   TIMERS            THREAD POOL           OS
- (setTimeout)        (fs, crypto)      (HTTP, TCP)
-
-        │                 │                 │
-        │                 │                 │
-        ▼                 ▼                 ▼
-
-  TIMERS QUEUE     (quando termina)   (quando evento chega)
-                        │                 │
-                        └──────┬──────────┘
-                               ▼
-                          POLL QUEUE
+                    ┌──────────────────────┐
+                    │      EVENT LOOP      │
+                    └─────────┬────────────┘
+                              │
+          ┌───────────────────┼───────────────────┐
+          ▼                   ▼                   ▼
+       TIMERS                POLL               CHECK
+    setTimeout()          HTTP / TCP        setImmediate()
+          │                   │
+          ▼                   ▼
+    Timers Queue         I/O callbacks
+                              │
+                              ▼
+                       ┌───────────────┐
+                       │ THREAD POOL   │
+                       │   fs/crypto   │
+                       └───────┬───────┘
+                               │
+                         quando termina
                                │
                                ▼
-                          EVENT LOOP
+                          EVENT LOOP                
 
              

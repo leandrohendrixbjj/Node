@@ -1,4 +1,3 @@
-
 "use strict"
 
 /*
@@ -28,8 +27,10 @@
  *  composição, prefira a composição.
  */
 
+console.clear();
+
 class Motor {
-  constructor(potencia) {    
+  constructor(potencia) {
     this.potencia = potencia;
   }
 
@@ -39,27 +40,17 @@ class Motor {
 }
 
 class Carro {
-  constructor(modelo, motor) {    
-    this.modelo = modelo
+  constructor(modelo, motor) {
+    this.modelo = modelo;
     this.motor = motor; // Aplicada a composição
   }
 
-  showInfo() {
-    console.log(`${this.modelo} ${this.ano}`);
-  }
-
   getModelo() {
-    return this.modelo;
+    return `${this.modelo} - Potência: ${this.motor.getPotencia()}`;
   }
-   
-  // Retorna o motor do carro ( Aplicada a composição )
-  getMotor() {
-    return this.motor;
-  }  
 }
 
 const motor = new Motor(100);
 const carro = new Carro('Ferrari', motor); // Aplicada a composição
 
 console.debug(`Caro:  ${carro.getModelo()}`);
-console.debug(`Pontência do motor: ${carro.getMotor().getPotencia()}`); // Aplicada a composição
