@@ -1,0 +1,105 @@
+╔══════════════════════════════════════════════════════════════════╗
+║                Event Loop — Fase Timers                          ║
+╚══════════════════════════════════════════════════════════════════╝
+
+
+┌─ Visão geral ────────────────────────────────────────────────────┐
+│                                                                   │
+│  A fase Timers é a primeira fase do Event Loop.                   │
+│                                                                   │
+│  Nela o Node.js executa os callbacks de:                          │
+│    • setTimeout()                                                 │
+│    • setInterval()                                                │
+│                                                                   │
+│  O que acontece nessa fase:                                       │
+│    1. O loop verifica se algum timer já venceu o delay            │
+│    2. Se venceu, executa o callback                               │
+│    3. Se não venceu, segue para a próxima fase                    │
+│                                                                   │
+│  Importante:                                                      │
+│    • Timers NÃO usam Thread Pool                                  │
+│    • São gerenciados pela libuv, dentro do próprio Event Loop     │
+│    • O delay é o tempo mínimo — o callback só roda quando         │
+│      o loop chega de novo nessa fase                              │
+│                                                                   │
+└───────────────────────────────────────────────────────────────────┘
+
+
+┌─ Timers × I/O (Node.js 20+) ──────────────────────────────────────┐
+│                                                                   │
+│  Mudança importante (libuv 1.45+ / Node.js 20):                   │
+│                                                                   │
+│    Antes do Node 20                                               │
+│      Timers podiam ser verificados ANTES e DEPOIS da fase poll. │
+│                                                                   │
+│    A partir do Node 20                                            │
+│      Em cada iteração do Event Loop, os timers são executados     │
+│      DEPOIS da fase de I/O (poll).                                │
+│                                                                   │
+│  Ordem prática no ciclo:                                          │
+│                                                                   │
+│      POLL (I/O)  →  TIMERS  →  (continua o loop)                  │
+│                                                                   │
+│  Ou seja:                                                         │
+│    1. O loop trata eventos de I/O na fase poll                    │
+│    2. Quando o poll termina, aí sim verifica timers expirados     │
+│    3. Só então executa os callbacks de setTimeout/setInterval     │
+│                                                                   │
+│  Precisão:                                                        │
+│    • O delay continua sendo um mínimo, não um horário exato       │
+│    • Se o poll estiver ocupado com I/O, o timer espera            │
+│    • Código síncrono pesado também atrasa o disparo               │
+│                                                                   │
+│  Relação com o poll:                                              │
+│    • Com timer pendente, o poll NÃO espera I/O para sempre        │
+│    • A libuv calcula quanto falta para o próximo timer            │
+│    • Esse tempo vira timeout do SO (epoll / kqueue / IOCP)        │
+│    • O loop acorda no máximo quando o timer vence                 │
+│                                                                   │
+└───────────────────────────────────────────────────────────────────┘
+
+
+┌──────────────────────────────────────────────────────────────┐
+│                         EVENT LOOP                            │
+└────────────────────────────┬─────────────────────────────────┘
+                             │
+                             ▼
+┌──────────────────────────────────────────────────────────────┐
+│                         TIMERS                               │
+│                                                              │
+│  setTimeout()                                                │
+│  setInterval()                                               │
+└────────────────────────────┬─────────────────────────────────┘
+                             │
+                             ▼
+┌──────────────────────────────────────────────────────────────┐
+│                    GERENCIAMENTO DO TIMER                    │
+│                                                              │
+│  • registra o timer                                          │
+│  • calcula o momento de expiração                             │
+│  • mantém os timers organizados por prazo                    │
+│  • verifica quais timers estão elegíveis                      │
+└────────────────────────────┬─────────────────────────────────┘
+                             │
+                             ▼
+                    ┌─────────────────┐
+                    │ Timer expirou?  │
+                    └────────┬────────┘
+                             │
+                 ┌───────────┴───────────┐
+                 │                       │
+                NÃO                     SIM
+                 │                       │
+                 ▼                       ▼
+          Continua aguardando      Callback elegível
+                                         │
+                                         ▼
+                              ┌─────────────────────┐
+                              │ Execução JavaScript │
+                              │       (V8)          │
+                              └──────────┬──────────┘
+                                         │
+                                         ▼
+                              ┌─────────────────────┐
+                              │     callback()      │
+                              └─────────────────────┘

@@ -56,8 +56,8 @@ Obs: No Node.js temos a Next Tick Queue, controlada pelo Node.js, e a Microtask 
 I/O → operações de entrada e saída ( FS )
 HTTP → requisições/respostas de rede
 sockets → conexões de rede TCP (banco, APIs, servidores)
-setImmediate → Executa depois que EventLoop termina a fase de IO. Podemos usar setImmediate() depois que o I/O terminou, 
-               para agendar outro trabalho:
+setImmediate → Quando a fase de Poll(sem eventos de IO pendentes na fila), o eventLoop avança para fase de check, 
+               onde são executados os callbacks exemplo setImmediate
                
 
 Fase em que a Libuv usar o Event Loop
