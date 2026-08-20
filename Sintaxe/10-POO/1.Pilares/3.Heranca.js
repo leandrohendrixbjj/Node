@@ -1,4 +1,4 @@
-console.clear()
+"use strict"
 
 /*
  * ┌──────────────────────────────────────────────────────────────────────────┐
@@ -25,68 +25,31 @@ console.clear()
  *  "Prefira composição à herança." Use herança quando a relação "é um" for
  *  clara, verdadeira e estável.
  */
-class ContaBancaria {
-  constructor(cliente, saldo = 0) {
-    this._saldo = saldo
-    this._cliente = cliente
-    this._movimentos = []
-    /** @type {number} 0 = sem acréscimo; subclasses usam multiplicador (ex.: 1.01) */
-    this.taxaRetorno = 0
+
+console.clear()
+
+class Pessoa {
+  constructor(nome, idade) {
+    this.nome = nome;
+    this.idade = idade;
   }
 
-  registrarMovimento(tipo, valor) {
-    this._movimentos.push({
-      tipo,
-      valor,
-      cliente: 'Cliente: ' + this._cliente,
-    })
-  }
-
-  depositar(valor) {
-    if (valor <= 0) return
-    const fator = this.taxaRetorno === 0 ? 1 : this.taxaRetorno
-    const credito = valor * fator
-    this._saldo += credito
-    this.registrarMovimento('DEPÓSITO', credito)
-  }
-
-  verExtrato() {
-    if (this._movimentos.length === 0) {
-      return 'Nenhuma movimentação registrada.'
-    }
-    return this._movimentos
-      .map(
-        (data) =>
-          `${data.tipo}: R$ ${data.valor.toFixed(2)} - ${data.cliente}`
-      )
-      .join('\n')
-  }  
-}
-
-class Poupanca extends ContaBancaria {
-  constructor(cliente, saldo = 0) {
-    super(cliente, saldo)
-    this.taxaRetorno = 1.01
+  getAtributos() {
+    return `Nome: ${this.nome} - Idade: ${this.idade}`;
   }
 }
 
-class Investimento extends ContaBancaria {
-  constructor(cliente, saldo = 0) {
-    super(cliente, saldo)
-    this.taxaRetorno = 1.02
+// Usuario "é uma" Pessoa (herança)
+class Usuario extends Pessoa {
+  constructor(nome, idade, email) {
+    super(nome, idade);
+    this.email = email;
+  }
+
+  getAtributos() {
+    return `${super.getAtributos()} - Email: ${this.email}`;
   }
 }
 
-// Exemplo de uso
-const poup = new Poupanca('João')
-poup.depositar(1000)
-console.log(poup.verExtrato())
-
-const inv = new Investimento('Maria')
-inv.depositar(1000)
-console.log(inv.verExtrato())
-
-const conta = new ContaBancaria('Pedro')
-conta.depositar(1000)
-console.log(conta.verExtrato())
-
+const usuario = new Usuario("Hendrix", 30, "hendrix@email.com");
+console.log(usuario.getAtributos());

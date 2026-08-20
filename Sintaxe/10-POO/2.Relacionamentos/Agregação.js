@@ -29,37 +29,38 @@
  *  podem referenciá-lo ou ele sobrevive ao fim da associação).
  */
 
-class Funcionario {
-  constructor(nome, salario) {
-    this.nome = nome;
-    this.salario = salario;
+class Capa {
+  constructor(cor) {
+    this._cor = cor;
   }
 
-  getFuncionario() {
-    return `Nome: ${this.nome}, Salario: ${this.salario}`;
-  }
-}
-
-class Empresa {
-  constructor(nome) {
-    this.nome = nome;
-    this.funcionarios = [];
-  }
-
-  adicionarFuncionario(funcionario) {
-    this.funcionarios.push(funcionario);
-  }
-
-  getEmpresa() {
-    return `Nome: ${this.nome},\nFuncionarios: ${this.funcionarios.map(funcionario => funcionario.getFuncionario()).join(', ')}`;
+  get cor() {
+    return this._cor;
   }
 }
 
-const f1 = new Funcionario("João", 1000);
-const f2 = new Funcionario("Maria", 2000);
+class Celular {
+  constructor(modelo) {
+    this._modelo = modelo;    
+    this._capa = null;
+  }
 
-const empresa = new Empresa("Empresa A");
-empresa.adicionarFuncionario(f1);
-empresa.adicionarFuncionario(f2);
+  get modelo() {
+    return this._modelo;
+  }
 
-console.log(empresa.getEmpresa());
+  get capa() {
+    return this._capa;
+  }
+
+  adicionarCapa(capa) {
+    this._capa = capa;
+  }
+}
+
+
+const capa = new Capa("Azul");
+const celular = new Celular("iPhone 15");
+celular.adicionarCapa(capa);
+
+console.log(`Modelo: ${celular.modelo} - Cor: ${celular.capa.cor}`);
