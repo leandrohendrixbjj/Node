@@ -25,81 +25,57 @@
 └───────────────────────────────────────────────────────────────────┘
 
 
-┌─ Timers × I/O (Node.js 20+) ──────────────────────────────────────┐
-│                                                                   │
-│  Mudança importante (libuv 1.45+ / Node.js 20):                   │
-│                                                                   │
-│    Antes do Node 20                                               │
-│      Timers podiam ser verificados ANTES e DEPOIS da fase poll. │
-│                                                                   │
-│    A partir do Node 20                                            │
-│      Em cada iteração do Event Loop, os timers são executados     │
-│      DEPOIS da fase de I/O (poll).                                │
-│                                                                   │
-│  Ordem prática no ciclo:                                          │
-│                                                                   │
-│      POLL (I/O)  →  TIMERS  →  (continua o loop)                  │
-│                                                                   │
-│  Ou seja:                                                         │
-│    1. O loop trata eventos de I/O na fase poll                    │
-│    2. Quando o poll termina, aí sim verifica timers expirados     │
-│    3. Só então executa os callbacks de setTimeout/setInterval     │
-│                                                                   │
-│  Precisão:                                                        │
-│    • O delay continua sendo um mínimo, não um horário exato       │
-│    • Se o poll estiver ocupado com I/O, o timer espera            │
-│    • Código síncrono pesado também atrasa o disparo               │
-│                                                                   │
-│  Relação com o poll:                                              │
-│    • Com timer pendente, o poll NÃO espera I/O para sempre        │
-│    • A libuv calcula quanto falta para o próximo timer            │
-│    • Esse tempo vira timeout do SO (epoll / kqueue / IOCP)        │
-│    • O loop acorda no máximo quando o timer vence                 │
-│                                                                   │
-└───────────────────────────────────────────────────────────────────┘
+setTimeout(..., 100)
+             │
+             ▼
+       timer registrado
+             │
+             │ 100ms
+             ▼
+       timer elegível
+             │
+             │
+             │ Call Stack ocupada?
+             │
+          SIM│
+             ▼
+       fica aguardando
+             │
+             ▼
+     Call Stack libera
+             │
+             ▼
+      Event Loop processa
 
 
-┌──────────────────────────────────────────────────────────────┐
-│                         EVENT LOOP                            │
-└────────────────────────────┬─────────────────────────────────┘
-                             │
-                             ▼
-┌──────────────────────────────────────────────────────────────┐
-│                         TIMERS                               │
-│                                                              │
-│  setTimeout()                                                │
-│  setInterval()                                               │
-└────────────────────────────┬─────────────────────────────────┘
-                             │
-                             ▼
-┌──────────────────────────────────────────────────────────────┐
-│                    GERENCIAMENTO DO TIMER                    │
-│                                                              │
-│  • registra o timer                                          │
-│  • calcula o momento de expiração                             │
-│  • mantém os timers organizados por prazo                    │
-│  • verifica quais timers estão elegíveis                      │
-└────────────────────────────┬─────────────────────────────────┘
-                             │
-                             ▼
-                    ┌─────────────────┐
-                    │ Timer expirou?  │
-                    └────────┬────────┘
-                             │
-                 ┌───────────┴───────────┐
-                 │                       │
-                NÃO                     SIM
-                 │                       │
-                 ▼                       ▼
-          Continua aguardando      Callback elegível
-                                         │
-                                         ▼
-                              ┌─────────────────────┐
-                              │ Execução JavaScript │
-                              │       (V8)          │
-                              └──────────┬──────────┘
-                                         │
-                                         ▼
-                              ┌─────────────────────┐
-                              │     callback()      │
-                              └─────────────────────┘
+E aí entra a parte interessante:
+
+  O fato de A ter sido registrado primeiro NÃO significa automaticamente que A será executado primeiro em qualquer situação.
+  O Node mantém os timers organizados pelo tempo de expiração.
+
+
+0ms
+│
+├── A registrado → vence em 1000ms
+│
+├── B registrado → vence em 100ms
+│
+│
+│   CALL STACK OCUPADA
+│   ┌──────────────────────┐
+│   │       for (...)      │
+│   │                      │
+│   │   processamento      │
+│   │      pesado          │
+│   └──────────────────────┘
+│
+├── 100ms
+│    B já venceu
+│
+├── 1000ms
+│    A também venceu
+│
+├── 2000ms
+│    for termina
+│
+└── Event Loop pode continuar
