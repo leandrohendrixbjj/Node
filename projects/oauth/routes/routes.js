@@ -1,12 +1,11 @@
 const express = require('express')
 const router = express.Router()
-const bodyParser = require('body-parser')
 const controller = require('../controllers/index')
-
-router.use(bodyParser.urlencoded({ extended: true }))
+const userController = require('../controllers/userController')
 
 router.get('/', controller.showIndex)
 router.get('/signup', controller.showPageSignUp)
+router.post('/signup', userController.create_account)
 router.get('/members', controller.showMembersPage)
 router.use(controller.get404Page)
 

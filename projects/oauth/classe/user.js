@@ -1,4 +1,5 @@
-const { getDb } = require('../util/database');
+const UserModel = require('../models/userModel');
+const AppError = require('../errors/AppError');
 
 class User {
     constructor({ username, email, password }) {
@@ -7,24 +8,29 @@ class User {
         this.password = password;
     }
 
-    validate() {
+    async validate() {
         if (!this.username?.trim()) {
-            throw new Error('Username is required');
+            throw new AppError('Username is required', 400);
         }
 
         if (!this.email?.trim()) {
-            throw new Error('Email is required');
+            throw new AppError('Email is required', 400);
         }
 
         if (!this.password?.trim()) {
-            throw new Error('Password is required');
+            throw new AppError('Password is required', 400);
+        }
+
+        const existingUser = await UserModel.findByEmail(this.email);
+        if (existingUser) {
+            throw new AppError('Email already in use', 409);
         }
     }
 
-    async save() {
-        this.validate();
-        const db = getDb();
-        return db.collection('users').insertOne({
+    async createAccount() {
+        await this.validate();
+
+        return UserModel.create({
             username: this.username,
             email: this.email,
             password: this.password
