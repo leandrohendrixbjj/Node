@@ -3,7 +3,7 @@
 /**
  * Construtor de classe em JavaScript
  *
- * Responsabilidade do construtor: inicializar os atributos nnecessários para o funcionamento da classe.
+ * Responsabilidade do construtor: inicializar os atributos necessários para o funcionamento da classe.
  * 
  * Devemos evitar que ele faça:
  *  -Fazer processamento pesado.

@@ -1,35 +1,27 @@
 "use strict";
 
 /**
- * Sobrecarga de construtor em JavaScript
+ * Herança e super()
  * 
- * Sobrecarga de construtor é a capacidade de um construtor de uma classe ter mais de uma assinatura.
- * 
- * * Diferente de Java, C# ou TypeScript (em tempo de compilação), JavaScript permite apenas um construtor por classe.
- * 
- * Então podemos usar o padrão para "sobrecarregar" o construtor em JavaScript.
- * 
- * Exemplo:
- *  - new Pessoa('João');
- *  - new Pessoa('João', 20);
- *  - new Pessoa('João', 20, 'Rua das Flores'); 
+ * Quando uma classe herda outra:
+ *  - O super() deve ser chamado antes de acessar this. 
  */
 
 console.clear();
 
 class Pessoa {
-  constructor(nome, idade) {
+  constructor(nome) {
     this.nome = nome;
-    
-    if (idade) {
-      this.idade = idade;
-    }
   }
 }
 
-const p1 = new Pessoa('João');
-console.log(p1.nome);
+class Funcionario extends Pessoa {
+  constructor(nome, cargo) {
+    super(nome);
+    this.cargo = cargo;
+  }
+}
 
-const p2 = new Pessoa('Maria', 20);
-console.log(p2.nome);
-console.log(p2.idade);
+const funcionario = new Funcionario('João', 'Desenvolvedor');
+console.log(funcionario.nome);
+console.log(funcionario.cargo);

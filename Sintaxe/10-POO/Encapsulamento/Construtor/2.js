@@ -5,6 +5,10 @@
  * 
  * É uma forma de passar parâmetros para um construtor de uma classe de forma mais limpa e organizada.
  * 
+ * Pode ser considerado uma forma de "sobrecarga" de construtor em JavaScript.
+ * 
+ * Sobrecarga de construtor é a capacidade de um construtor de uma classe ter mais de uma assinatura.
+ * 
  * Vantagens:
  *  - Facilita adicionar novos campos.
  *  - Evita problemas com ordem dos parâmetros.

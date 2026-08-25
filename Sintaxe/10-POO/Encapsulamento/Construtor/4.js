@@ -1,9 +1,9 @@
 "use strict";
 
 /**
- * Factory
+ * Factory é um padrão de projeto (Design Pattern)
  * 
- * É uma função que retorna uma instância de uma classe.
+ * É uma função ( criarComNome ) que retorna uma instância de uma classe.
  * 
  * Vantagens:
  *  - Facilita a criação de instâncias de uma classe.
@@ -13,32 +13,42 @@
 
 console.clear();
 
-class Pessoa {
-  constructor({nome, idade, perfil}) {
-    this.nome = nome;
-    this.idade = idade;
-    this.perfil = perfil;
-  }
-
-  static criarComNome({nome}) {
-    return new Pessoa({nome, idade: null, perfil: 'user'});
-  }
-
-  static criarCompleta({nome, idade, perfil}) {
-    return new Pessoa({nome, idade, perfil});
+class Usuario {
+  constructor(dados) {
+    this.nome = dados.nome;
   }
 }
 
-const pessoa = Pessoa.criarComNome({nome: 'João'});
-console.log(pessoa.nome);
-console.log(pessoa.perfil);
+class Admin extends Usuario {
+  constructor(dados) {
+    super(dados);
+    this.role = 'admin';
+  }
+}
 
-const pessoa2 = Pessoa.criarCompleta({nome: 'Maria', idade: 20, perfil: 'user'});
-console.log(pessoa2.nome);
-console.log(pessoa2.idade);
-console.log(pessoa2.perfil);
+class Cliente extends Usuario {
+  constructor(dados) {
+    super(dados);
+    this.role = 'cliente';
+  }
+}
 
-const pessoa3 = Pessoa.criarCompleta({nome: 'Jonas', idade: 30, perfil: 'admin'});
-console.log(pessoa3.nome);
-console.log(pessoa3.idade);
-console.log(pessoa3.perfil);
+class UsuarioFactory {
+  static criar(tipo, dados) {
+    if (tipo === 'admin') {
+      return new Admin(dados);
+    }
+
+    if (tipo === 'cliente') {
+      return new Cliente(dados);
+    }
+
+    throw new Error('Tipo de usuário inválido');
+  }
+} 
+
+const pessoa = UsuarioFactory.criar('admin', {nome: 'João'});
+console.log(`${pessoa.nome} é um ${pessoa.role}`);
+
+const cliente = UsuarioFactory.criar('cliente', {nome: 'Maria'});
+console.log(`${cliente.nome} é um ${cliente.role}`);
