@@ -33,7 +33,7 @@
 │        │                                       │                  │
 │        ▼                                       ▼                  │
 │ ┌───────────────┐                     ┌────────────────────────┐  │
-│ │ Microtasks    │                     │ Macrotasks (libuv)     │  │
+│ │ Microtasks    │                     │ Fase Event Loop        │  │
 │ │ (V8 / Node)   │                     │                        │  │
 │ └──────┬────────┘                     │ timers (setTimeout)    │  │
 │        │                              │ poll (I/O, HTTP)       │  │
