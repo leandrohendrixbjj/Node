@@ -1,3 +1,4 @@
+const bcrypt = require('bcrypt');
 const UserModel = require('../models/userModel');
 const AppError = require('../errors/AppError');
 
@@ -17,7 +18,11 @@ class User {
             throw new AppError('Email is required', 400);
         }
 
-        if (!this.password?.trim()) {
+        if (typeof this.password !== 'string') {
+            throw new AppError('Password is incorrect', 400);
+        }
+
+        if (!this.password.trim()) {
             throw new AppError('Password is required', 400);
         }
 
@@ -30,10 +35,12 @@ class User {
     async createAccount() {
         await this.validate();
 
+        const hashedPassword = await bcrypt.hash(this.password, 12);
+
         return UserModel.create({
             username: this.username,
             email: this.email,
-            password: this.password
+            password: hashedPassword
         });
     }
 }

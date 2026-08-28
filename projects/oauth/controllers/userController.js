@@ -3,7 +3,7 @@ const User = require('../classe/user');
 exports.create_account = async (req, res) => {
     const { username, email, password } = req.body;
 
-    console.log('Dados recebidos:', { username, email, password });
+    console.log('Dados recebidos:', { username, email });
 
     const user = new User({ username, email, password });
 

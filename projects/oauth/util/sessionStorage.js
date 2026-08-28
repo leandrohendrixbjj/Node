@@ -4,7 +4,7 @@ const MongoDBStore = require('connect-mongodb-session')(session);
 const sessionStore = new MongoDBStore(
 {
     uri: 'mongodb://localhost:27017/',
-    databaseName: 'test',
+    databaseName: 'OAuth',
     collection: 'sessions'
 })
 
