@@ -2,6 +2,7 @@ const User = require('../classe/user');
 
 exports.create_account = async (req, res) => {
     const { username, email, password } = req.body;
+    const isRequestJson = req.is('application/json');
 
     console.log('Dados recebidos:', { username, email });
 
@@ -10,7 +11,7 @@ exports.create_account = async (req, res) => {
     try {
         await user.createAccount();
 
-        if (req.is('application/json')) {
+        if (isRequestJson) {
             return res.status(201).json({
                 message: 'Conta criada com sucesso',
                 user: { username, email }

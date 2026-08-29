@@ -10,30 +10,20 @@ class User {
     }
 
     async validate() {
-        if (!this.username?.trim()) {
-            throw new AppError('Username is required', 400);
-        }
-
-        if (!this.email?.trim()) {
-            throw new AppError('Email is required', 400);
-        }
-
-        if (typeof this.password !== 'string') {
-            throw new AppError('Password is incorrect', 400);
-        }
-
-        if (!this.password.trim()) {
-            throw new AppError('Password is required', 400);
-        }
-
-        const existingUser = await UserModel.findByEmail(this.email);
+        const existingUser = await UserModel.findByEmail(this.email.trim().toLowerCase());
         if (existingUser) {
             throw new AppError('Email already in use', 409);
         }
     }
 
+    sanitize() {
+        this.username = this.username.trim().toLowerCase();
+        this.email = this.email.trim().toLowerCase();
+    }
+
     async createAccount() {
         await this.validate();
+        this.sanitize();
 
         const hashedPassword = await bcrypt.hash(this.password, 12);
 
