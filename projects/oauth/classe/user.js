@@ -33,6 +33,25 @@ class User {
             password: hashedPassword
         });
     }
+
+    async validateCredentials() {
+        this.email = this.email.trim().toLowerCase();
+
+        const existingUser = await UserModel.findByEmail(this.email);
+        if (!existingUser) {
+            throw new AppError('Invalid email or password', 401);
+        }
+
+        const passwordMatch = await bcrypt.compare(this.password, existingUser.password);
+        if (!passwordMatch) {
+            throw new AppError('Invalid email or password', 401);
+        }
+
+        return {
+            username: existingUser.username,
+            email: existingUser.email
+        };
+    }
 }
 
 module.exports = User;

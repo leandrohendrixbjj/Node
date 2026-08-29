@@ -34,3 +34,35 @@ exports.create_account = async (req, res) => {
         });
     }
 };
+
+exports.login = async (req, res) => {
+    const { email, password } = req.body;
+    const isRequestJson = req.is('application/json');
+
+    const user = new User({ email, password });
+
+    try {
+        const validatedUser = await user.validateCredentials();
+
+        if (isRequestJson) {
+            return res.status(200).json({
+                message: 'Credenciais válidas',
+                user: validatedUser
+            });
+        }
+
+        res.redirect('/members');
+    } catch (err) {
+        const status = err.statusCode || 500;
+        const message = status === 500 ? 'Erro interno do servidor' : err.message;
+
+        if (isRequestJson) {
+            return res.status(status).json({ message });
+        }
+
+        res.status(status).render('index', {
+            errorMessage: message,
+            email: email || ''
+        });
+    }
+};

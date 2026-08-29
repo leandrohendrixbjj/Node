@@ -17,15 +17,15 @@
     <main>
         <h1>Login</h1>
         <h2>Boas vindas! Faça seu login</h2>
-        <form class="login-form" action="#" method="#">
+        <form class="login-form" action="/login" method="POST">
             <label for="email">Email</label>
-            <input type="email" id="email" name="email" required>
+            <input type="email" id="email" name="email" value="<%= typeof email !== 'undefined' ? email : '' %>" required>
 
             <label for="password">Senha</label>
             <input type="password" id="password" name="password" required>
 
-            <% if (typeof error !== 'undefined') { %>
-                <p class="error-message"><%= error %></p>
+            <% if (typeof errorMessage !== 'undefined') { %>
+                <p class="error-message"><%= errorMessage %></p>
             <% } %>
 
             <div class="login-btn-container">
