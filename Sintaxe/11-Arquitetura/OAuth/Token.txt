@@ -1,0 +1,126 @@
+================================================================================
+                         ACCESS TOKEN vs SESSION TOKEN
+================================================================================
+
+
+================================================================================
+                            1. ACCESS TOKEN
+================================================================================
+
+Relacionado à autorização. Responde: "O que posso acessar?"
+Faz parte do protocolo OAuth.
+
+Pergunta que responde:
+
+  "Essa aplicação está autorizada a acessar determinado recurso?"
+
+
+--------------------------------------------------------------------------------
+  Exemplo
+--------------------------------------------------------------------------------
+
+    Aplicação
+       │
+       │ Authorization: Bearer <access_token>
+       ▼
+    Google API
+       │
+       └── valida o token
+            ├── é válido?
+            ├── não expirou?
+            └── possui o scope necessário?
+
+Se estiver tudo correto, a API permite o acesso.
+
+
+================================================================================
+                            2. SESSION TOKEN
+================================================================================
+
+Relacionado à sessão do usuário dentro de uma aplicação.
+Responde: "Qual sessão está autenticada?"
+Não faz parte do protocolo OAuth.
+
+Pergunta que responde:
+
+  "Esse navegador já está autenticado nessa aplicação?"
+
+
+--------------------------------------------------------------------------------
+  Fluxo: login
+--------------------------------------------------------------------------------
+
+    Usuário
+       │
+       │ Login
+       ▼
+    Aplicação
+       │
+       │ cria sessão
+       ▼
+    Session ID
+       │
+       ▼
+    Browser
+
+
+--------------------------------------------------------------------------------
+  Fluxo: próximas requisições
+--------------------------------------------------------------------------------
+
+    Browser
+       │
+       │ Session ID
+       ▼
+    Aplicação
+
+A aplicação identifica que aquela sessão pertence ao usuário autenticado.
+
+Exemplo clássico:
+
+  Cookie: session_id=abc123
+
+
+================================================================================
+                         A DIFERENÇA PRINCIPAL
+================================================================================
+
+  ┌─────────────────────────┬───────────────────────────┬───────────────────────────┐
+  │                         │ Access Token              │ Session Token             │
+  ├─────────────────────────┼───────────────────────────┼───────────────────────────┤
+  │ Objetivo                │ Autorizar acesso a        │ Manter sessão             │
+  │                         │ recursos                  │ autenticada               │
+  ├─────────────────────────┼───────────────────────────┼───────────────────────────┤
+  │ Contexto                │ OAuth / APIs              │ Aplicação                 │
+  ├─────────────────────────┼───────────────────────────┼───────────────────────────┤
+  │ Quem valida             │ Resource Server / API     │ Aplicação                 │
+  ├─────────────────────────┼───────────────────────────┼───────────────────────────┤
+  │ Representa              │ Permissão de acesso       │ Sessão do usuário         │
+  ├─────────────────────────┼───────────────────────────┼───────────────────────────┤
+  │ Exemplo                 │ Bearer eyJ...             │ session_id=abc123         │
+  ├─────────────────────────┼───────────────────────────┼───────────────────────────┤
+  │ Pode conter scopes      │ Sim                       │ Não necessariamente       │
+  └─────────────────────────┴───────────────────────────┴───────────────────────────┘
+
+
+================================================================================
+                      ELES PODEM APARECER JUNTOS
+================================================================================
+
+Exemplo: você entra em um site usando Google.
+
+    Google
+       │
+       │ Access Token
+       ▼
+    Seu aplicativo
+       │
+       │ cria uma sessão
+       ▼
+    Session Token
+       │
+       ▼
+    Browser
+
+O Access Token autoriza o acesso aos dados do Google.
+A Session Token mantém você logado no seu próprio site.

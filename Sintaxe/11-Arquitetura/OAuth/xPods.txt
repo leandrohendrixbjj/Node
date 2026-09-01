@@ -1,0 +1,95 @@
+================================================================================
+                    TOKENS E MÚLTIPLOS PODS (ESCALABILIDADE)
+================================================================================
+
+
+================================================================================
+                   1. ACCESS TOKEN E MÚLTIPLOS PODS
+================================================================================
+
+Se o Access Token for validado de forma stateless, qualquer pod pode
+receber a requisição e validar o token.
+
+                 ┌── Pod 1
+                 │
+Client ──────────┼── Pod 2
+                 │
+                 └── Pod 3
+                       ▲
+                       │
+                 Access Token
+
+Com JWT assinado, o Pod 2 valida sem precisar saber que o usuário
+passou antes pelo Pod 1. Isso facilita a escalabilidade horizontal.
+
+
+--------------------------------------------------------------------------------
+  Validação no pod
+--------------------------------------------------------------------------------
+
+    Request
+    Authorization: Bearer <token>
+           │
+           ▼
+        Pod 2
+           │
+           ├── assinatura válida?
+           ├── expirou?
+           ├── issuer correto?
+           └── possui scope?
+
+
+================================================================================
+              2. SESSION TOKEN — PROBLEMA: SESSÃO NA MEMÓRIA
+================================================================================
+
+Se a sessão ficar só na memória de um pod:
+
+    Pod 1
+    └── memória
+        └── sessão do usuário
+
+    Pod 1 💥
+       ↓
+    sessão perdida
+
+
+================================================================================
+           3. SESSION TOKEN — SOLUÇÃO: STORE COMPARTILHADO
+================================================================================
+
+Session Token não significa que a sessão fica presa em um pod.
+Você pode centralizar as sessões:
+
+    Client
+      │
+      ▼
+    Load Balancer
+      │
+      ├── Pod 1
+      ├── Pod 2
+      └── Pod 3
+
+    Pod 1 ──┐
+    Pod 2 ──┼──► Redis
+    Pod 3 ──┘
+
+    Request 1 → Pod 1 → Redis → sessão encontrada
+    Request 2 → Pod 3 → Redis → sessão encontrada
+    Request 3 → Pod 2 → Redis → sessão encontrada
+
+
+--------------------------------------------------------------------------------
+  Se o Pod 1 cair
+--------------------------------------------------------------------------------
+
+O usuário não perde a sessão.
+
+    Pod 1 💥
+
+    Client → Load Balancer → Pod 2 → Redis
+                                  │
+                                  └── sessão continua válida
+
+No seu projeto, o equivalente é o MongoDB (`connect-mongodb-session`):
+todos os pods leem e escrevem sessões no mesmo store.

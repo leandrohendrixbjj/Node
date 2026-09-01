@@ -1,0 +1,89 @@
+================================================================================
+                              O QUE É OAUTH?
+================================================================================
+
+Protocolo de autorização que permite delegar acesso a uma aplicação
+sem compartilhar diretamente as credenciais do usuário.
+
+
+================================================================================
+                              O QUE RESOLVE
+================================================================================
+
+Imagine que você tem uma conta no Google. Uma abordagem insegura seria
+passar usuário e senha do Google para outro aplicativo. Nesse caso, o app
+teria suas credenciais e poderia usá-las para acessar sua conta.
+
+Com OAuth, isso não acontece.
+
+
+================================================================================
+                           FLUXO SIMPLIFICADO
+================================================================================
+
+    Usuário
+       │
+       │ deseja acessar
+       ▼
+    Aplicação
+       │
+       │ solicita autorização
+       ▼
+    Google
+       │
+       │ usuário autentica e autoriza
+       ▼
+    Access Token
+       │
+       ▼
+    Aplicação
+       │
+       │ usa o token
+       ▼
+    API do Google
+
+A aplicação não recebe a senha do usuário.
+Ela recebe um Access Token — uma autorização delegada para acessar
+determinados recursos.
+
+
+================================================================================
+                            ACCESS TOKEN
+================================================================================
+
+Credencial temporária que permite à aplicação acessar recursos em nome
+do usuário.
+
+    Access Token
+       │
+       ├── permite acessar perfil
+       ├── permite acessar e-mail
+       ├── não permite alterar senha
+       └── possui validade limitada
+
+
+================================================================================
+                              IMPORTANTE
+================================================================================
+
+O Access Token não é necessariamente um "token de sessão".
+São conceitos diferentes:
+
+  • Access Token  → autoriza acesso a recursos protegidos (APIs)
+  • Sessão        → identifica o usuário logado na sua aplicação
+
+
+================================================================================
+                         ALEGORIA: O HOTEL
+================================================================================
+
+OAuth funciona como um hotel: você faz a reserva e recebe um cartão de acesso.
+
+    Quarto 302              ✓
+    Academia                ✓
+    Piscina                 ✓
+    Quarto 401              ✗
+    Área administrativa     ✗
+
+Você não recebe a chave mestra do hotel.
+O cartão tem permissões específicas e validade limitada.
