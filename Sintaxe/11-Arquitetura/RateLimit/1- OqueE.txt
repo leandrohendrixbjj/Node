@@ -1,0 +1,66 @@
+================================================================================
+                            O QUE É RATE LIMIT?
+================================================================================
+
+Camada de proteção que controla a quantidade de requisições para evitar
+consumo excessivo dos recursos da aplicação — seja por abuso, ataque ou
+uso legítimo excessivo.
+
+
+--------------------------------------------------------------------------------
+  Exemplo
+--------------------------------------------------------------------------------
+
+  Limite: 100 requests por minuto por usuário
+
+  Se o usuário ultrapassar → HTTP 429 "Too Many Requests"
+
+
+================================================================================
+                              DETALHE IMPORTANTE
+================================================================================
+
+Rate limit controla a quantidade de requisições ao longo do tempo.
+
+Não controla necessariamente quantas requisições ocorrem ao mesmo tempo.
+Isso é concurrency limit — outro mecanismo.
+
+  • Rate limit        → quantas requests por janela de tempo
+  • Concurrency limit → quantas requests simultâneas
+
+
+================================================================================
+                                 DESENHO
+================================================================================
+
+Perguntas de design:
+
+  1. Onde o rate limiter mora na arquitetura?
+  2. Como identificamos os clientes?
+
+
+--------------------------------------------------------------------------------
+                         Rate limiter no Gateway
+--------------------------------------------------------------------------------
+
+                    ┌─────────────────┐
+                    │     Gateway     │
+    Client ◄───────►│                 │───────► Microservice 1
+                    │  Rate limiter   │───────► Microservice 2
+                    │                 │───────► Microservice 3
+                    └─────────────────┘
+
+O Rate Limiter vive dentro do Gateway.
+O Gateway recebe a request, aplica o limite e só então encaminha
+para o microservice correspondente.
+
+
+Obs: Podemos usar o Rate Limit dentro de cada MS. Problema que fica dificil gerenciar o limit de casa client
+se ele cada momento está em um MS diferente.
+
+Podemos criar uma camada a parte de rate limite onde cada MS chama essa camada par validar os davores de rate,
+problema e que podemos ter uma latência visto que mais uma camada é adicionada no processamento
+
+Nesse caso podemos usa-lo no Gateway, isso resolve as questões ciaddas acima centralizado rate onde
+é a origem de cada request
+

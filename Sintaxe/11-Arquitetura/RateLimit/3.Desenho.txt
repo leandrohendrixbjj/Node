@@ -1,0 +1,74 @@
+--------------------------------------------------------------------------------
+               Alternativa 1 — Rate Limit dentro de cada Microservice
+--------------------------------------------------------------------------------
+
+                    ┌─────────┐     ┌─────────────────────┐
+                    │         │────►│   Microservice 1    │
+                    │         │     │   Rate limiter      │
+    Client ◄───────►│ Gateway │     └─────────────────────┘
+                    │         │     ┌─────────────────────┐
+                    │         │────►│   Microservice 2    │
+                    │         │     │   Rate limiter      │
+                    │         │     └─────────────────────┘
+                    │         │     ┌─────────────────────┐
+                    │         │────►│   Microservice 3    │
+                    │         │     │   Rate limiter      │
+                    └─────────┘     └─────────────────────┘
+
+
+Podemos implementar o Rate Limit individualmente em cada MS. Porém, isso dificulta 
+o gerenciamento de uma política global para um mesmo consumidor.
+
+    Client A
+       │
+       ├──► MS 1 → limite: 100 req/min
+       ├──► MS 2 → limite: 100 req/min
+       └──► MS 3 → limite: 100 req/min
+
+Nesse cenário, o Client A poderia realizar até 300 requests/min, caso os limites sejam independentes.
+
+Problemas:
+
+  • Cada MS precisa conhecer e implementar as mesmas regras
+  • Não há um limite global por consumidor
+  • Aumenta a complexidade de manutenção
+
+
+--------------------------------------------------------------------------------
+           Alternativa 2 — Serviço centralizado de Rate Limit
+--------------------------------------------------------------------------------
+
+                    ┌─────────┐     ┌──────────────────┐
+                    │         │────►│ Microservice 1   │──┐
+                    │         │     └──────────────────┘  │
+    Client ◄───────►│ Gateway │     ┌──────────────────┐  │     ┌─────────────────┐
+                    │         │────►│ Microservice 2   │──┼────►│  Rate Limit     │
+                    │         │     └──────────────────┘  │     │  Service        │
+                    │         │     ┌──────────────────┐  │     └─────────────────┘
+                    │         │────►│ Microservice 3   │──┘
+                    └─────────┘     └──────────────────┘
+
+Essa abordagem centraliza a regra, porém adiciona uma chamada extra ao fluxo de cada request, 
+podendo aumentar a latência e também criar um novo ponto de dependência na arquitetura.
+
+-------------------------------------------------------------------------------
+                         Rate limiter no Gateway
+--------------------------------------------------------------------------------
+
+                    ┌─────────────────┐
+                    │     Gateway     │
+    Client ◄───────►│                 │───────► Microservice 1
+                    │  Rate limiter   │───────► Microservice 2
+                    │                 │───────► Microservice 3
+                    └─────────────────┘
+
+Nesse cenário, o Gateway é o ponto mais adequado para aplicar o Rate Limit porque ele é a entrada central das requests.
+
+Com isso, conseguimos:
+
+  • Centralizar as regras de Rate Limit.
+  • Identificar o consumidor antes de encaminhar a request.
+  • Aplicar limites independentemente do microservice acessado.
+  • Evitar processamento desnecessário nos microservices.
+  • Evitar uma chamada adicional para um Rate Limit Service.
+  • Ter uma política consistente para toda a API.

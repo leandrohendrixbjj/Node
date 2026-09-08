@@ -1,0 +1,102 @@
+================================================================================
+                      RATE LIMIT — REQUISITOS FUNCIONAIS
+================================================================================
+
+
+================================================================================
+                     1. IDENTIFICAÇÃO DO CONSUMIDOR
+================================================================================
+
+Precisamos definir quem está consumindo a API.
+
+  • IP          → útil para tráfego anônimo, mas não identifica bem o consumidor
+  • Token / API Key → geralmente melhor para identificar uma aplicação/cliente
+  • User ID     → útil quando existe autenticação por usuário
+  • Tenant      → importante em aplicações multi-tenant
+  • Combinação  → por exemplo tenant + API Key
+
+
+================================================================================
+                     2. DEFINIR O QUE SERÁ LIMITADO
+================================================================================
+
+O limite é o volume de requests — mas precisamos especificar a janela:
+
+  • 100 requests / minuto
+  • 10.000 requests / hora
+
+
+--------------------------------------------------------------------------------
+  E principalmente para qual recurso
+--------------------------------------------------------------------------------
+
+Nem toda requisição custa o mesmo para a aplicação.
+
+  GET  /tickets       → 100 req/min
+  GET  /tickets/{id}  → 300 req/min
+  POST /tickets       →  50 req/min
+  GET  /export        →  10 req/min
+
+
+================================================================================
+              3. COMPORTAMENTO AO ATINGIR O LIMITE
+================================================================================
+
+Resposta HTTP 429 com corpo estruturado:
+
+  {
+    "error": "rate_limit_exceeded",
+    "message": "Limite de requisições excedido.",
+    "limit": 100,
+    "window": "1m",
+    "retryAfter": 30
+  }
+
+
+--------------------------------------------------------------------------------
+  Headers úteis para o consumidor
+--------------------------------------------------------------------------------
+
+Informam: "meu limite é 100, já usei 77 e faltam 30 segundos para renovar".
+
+  X-RateLimit-Limit: 100
+  X-RateLimit-Remaining: 23
+  X-RateLimit-Reset: 30
+
+
+================================================================================
+                     4. DEFINIR OS NÚMEROS DO LIMITE
+================================================================================
+
+Esses números não devem ser chutados. Idealmente vêm de:
+
+  • capacidade dos pods
+  • capacidade do banco
+  • tamanho do pool de conexões
+  • tempo médio das requisições
+  • CPU / memória
+  • volume normal de tráfego
+  • picos
+  • endpoints mais pesados
+  • SLA esperado
+
+
+--------------------------------------------------------------------------------
+  Exemplo de camadas
+--------------------------------------------------------------------------------
+
+  API Gateway
+  ├── 1.000 req/min por API Key
+  └── 50.000 req/min global
+
+  Aplicação
+  ├── GET  /tickets → 100 req/min por usuário
+  └── POST /export  →  10 req/min por usuário
+
+  Infraestrutura
+  └── 100 requests simultâneos global
+      (concurrency limit)
+
+
+
+https://www.youtube.com/watch?v=MIJFyUPG4Z4
