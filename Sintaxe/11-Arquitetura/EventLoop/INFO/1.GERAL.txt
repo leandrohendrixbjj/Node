@@ -85,4 +85,40 @@ Fase em que a Libuv usar o Event Loop
                                ▼
                           EVENT LOOP                
 
-             
+
+| Código Node.js                                             | Vai para fila/fase HTTP   (`poll`)? |
+| ---------------------------------------------------------- | ----------------------------------- |
+| `fs.readFile(path, callback)`                              | ✅ Sim                               |
+| `fs.writeFile(path, data, callback)`                       | ✅ Sim                               |
+| `fs.appendFile(path, data, callback)`                      | ✅ Sim                               |
+| `fs.readdir(path, callback)`                               | ✅ Sim                               |
+| `fs.stat(path, callback)`                                  | ✅ Sim                               |
+| `fs.unlink(path, callback)`                                | ✅ Sim                               |
+| `fs.rename(oldPath, newPath, callback)`                    | ✅ Sim                               |
+| `fs.access(path, callback)`                                | ✅ Sim                               |
+| `fs.open(path, flags, callback)`                           | ✅ Sim                               |
+| `fs.close(fd, callback)`                                   | ✅ Sim                               |
+| `fs.read(fd, buffer, offset, length, position, callback)`  | ✅ Sim                               |
+| `fs.write(fd, buffer, offset, length, position, callback)` | ✅ Sim                               |
+| `socket.on('data', callback)`                              | ✅ Sim                               |
+| `server.on('request', callback)`                           | ✅ Sim                               |
+
+
+| Código Node.js                           | `nextTickQueue` |
+| ---------------------------------------- | :-------------: |
+| `process.nextTick(callback)`             |        ✅        |
+| `process.nextTick(callback, arg1, arg2)` |        ✅        |
+
+
+| Código Node.js / JavaScript      | Microtask Queue |
+| -------------------------------- | :-------------: |
+| `Promise.then()`                 |        ✅        |
+| `Promise.catch()`                |        ✅        |
+| `Promise.finally()`              |        ✅        |
+| `queueMicrotask()`               |        ✅        |
+| `await` / continuação de `async` |        ✅        |
+| `Promise.resolve().then()`       |        ✅        |
+| `Promise.reject().catch()`       |        ✅        |
+
+
+

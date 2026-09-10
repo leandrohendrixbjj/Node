@@ -79,3 +79,11 @@ E aí entra a parte interessante:
 │    for termina
 │
 └── Event Loop pode continuar
+
+
+| Código Node.js                       | Vai para fase `check`? |
+| ------------------------------------ | ---------------------- |
+| `setImmediate(callback)`             | ✅ Sim                  |
+| `setImmediate(callback, arg1)`       | ✅ Sim                  |
+| `setImmediate(callback, arg1, arg2)` | ✅ Sim                  |
+| `setImmediate(callback, ...args)`    | ✅ Sim                  |

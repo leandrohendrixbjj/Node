@@ -1,0 +1,132 @@
+================================================================================
+                          FASE DE I/O -  ASSINCRONA
+================================================================================
+
+Para entender a fase de I/O do Node.js de forma bem intuitiva se separarmos três coisas: 
+  1.Event Loop. 
+  2.Libuv 
+  3.Sistema operacional.
+
+Fluxo da operação:
+
+    1. A thread executa operações bloqueantes (leitura/gravação de arquivos)
+       e se comunica com o Sistema Operacional
+    2. Quando a operação termina, a thread notifica a libuv
+    3. A libuv disponibiliza o callback para a fase Poll do Event Loop
+    4. O Event Loop envia o callback para o Call Stack, onde ele é executado
+
+
+Thread Pool e fila de espera:
+
+    • Por padrão, o Thread Pool possui apenas 4 threads
+    • Se todas estiverem ocupadas, as próximas operações de I/O não travam
+      o Event Loop — ficam em fila aguardando uma thread disponível
+    • O tamanho pode ser aumentado com a variável de ambiente
+      UV_THREADPOOL_SIZE, quando a aplicação demanda maior paralelismo
+
+
+Código JS
+   │
+   ▼
+V8 / Call Stack
+   │
+   ▼
+Node.js fs API
+   │
+   ▼
+libuv
+   │
+   ├── Thread 1 ──┐
+   ├── Thread 2 ──┤
+   ├── Thread 3 ──┤
+   └── Thread 4 ──┘
+                 │
+                 ▼
+       Sistema Operacional
+                 │
+                 │ resultado
+                 ▼
+              libuv
+                 │
+                 ▼
+            Event Loop
+                 │
+                 ▼
+          V8 → callback()
+
+
+================================================================================
+                          FASE DE I/O -  SINCRONA
+================================================================================
+
+Leitura síncrona não passa pela fase de I/O do Event Loop. No readFileSync(), a libuv não pega uma das 4 threads 
+do Thread Pool. Quem faz a chamada ao sistema operacional é a própria thread principal do Node.
+
+Fluxo:
+
+  Main Thread
+      │
+      ├── console.log('1')
+      │
+      ├── fs.readFileSync()
+      │       │
+      │       └── 🔴 BLOQUEIA A MAIN THREAD
+      │              enquanto o arquivo é lido
+      │
+      ├── recebe os dados
+      │
+      └── console.log('2')
+
+
+Durante o readFileSync():
+
+  o JavaScript não continua executando
+  o Event Loop não consegue avançar
+  outras callbacks não são processadas
+  requisições HTTP podem ficar esperando
+  timers podem atrasar  
+
+I/O assíncrono:
+    Main Thread
+      │
+      ├── console.log('1')
+      │
+      ├── fs.readFile()
+      │       │
+      │       └── libuv
+      │             │
+      │             └── Thread Pool
+      │                    │
+      │                    └── lê arquivo
+      │
+      ├── console.log('2')
+      │
+      └── Event Loop continua
+              │
+              │
+              ▼
+        callback disponível
+              │
+              ▼
+            Poll phase
+              │
+              ▼
+        callback executada    
+
+
+| Código Node.js                                             | Vai para fila/fase de I/O (`poll`)? |
+| ---------------------------------------------------------- | ----------------------------------- |
+| `fs.readFile(path, callback)`                              | ✅ Sim                               |
+| `fs.writeFile(path, data, callback)`                       | ✅ Sim                               |
+| `fs.appendFile(path, data, callback)`                      | ✅ Sim                               |
+| `fs.readdir(path, callback)`                               | ✅ Sim                               |
+| `fs.stat(path, callback)`                                  | ✅ Sim                               |
+| `fs.unlink(path, callback)`                                | ✅ Sim                               |
+| `fs.rename(oldPath, newPath, callback)`                    | ✅ Sim                               |
+| `fs.access(path, callback)`                                | ✅ Sim                               |
+| `fs.open(path, flags, callback)`                           | ✅ Sim                               |
+| `fs.close(fd, callback)`                                   | ✅ Sim                               |
+| `fs.read(fd, buffer, offset, length, position, callback)`  | ✅ Sim                               |
+| `fs.write(fd, buffer, offset, length, position, callback)` | ✅ Sim                               |
+| `socket.on('data', callback)`                              | ✅ Sim                               |
+| `server.on('request', callback)`                           | ✅ Sim                               |
