@@ -1,0 +1,89 @@
+================================================================================
+                    RATE LIMIT — ALGORITMOS: TOKEN BUCKET
+================================================================================
+
+Token Bucket (Balde de Tokens) é o algoritmo mais famoso e o mais fácil de
+entender.
+
+Por que ele é tão usado? Porque resolve duas necessidades ao mesmo tempo:
+
+  • Controlar a taxa média de requisições (req/s)
+  • Taxa de reposição: por exemplo, 5 tokens/segundo
+
+
+================================================================================
+                            1. A IDEIA DO BALDE
+================================================================================
+
+Imagine que cada cliente possui um balde de tokens:
+
+                            Tokens entram
+                                 ↓
+                          ┌─────────────┐
+                          │  ● ● ● ● ●  │  ← capacidade: 5
+                          └──────┬──────┘
+                                 │
+                                 ↓
+                              Request
+
+  • O balde é preenchido continuamente por um refill rate
+  • Cada request consome 1 token
+  • O balde nunca passa da sua capacidade
+
+
+================================================================================
+                          2. PARÂMETROS DO BUCKET
+================================================================================
+
+  capacidade  = 10 tokens         → máximo armazenado
+  reposição   = 5 tokens/segundo  → refill rate
+  custo       = 1 token            → cada request consome 1 token
+
+
+================================================================================
+                             3. FUNCIONAMENTO
+================================================================================
+
+Começamos com o balde cheio:
+
+                    ┌─────────────────────┐
+                    │● ● ● ● ● ● ● ● ● ●  │  10 tokens
+                    └─────────────────────┘
+
+
+O usuário faz 8 requisições rapidamente:
+
+                    8 requests
+                           ↓
+                    ┌─────────────────────┐
+                    │● ●                  │  2 tokens
+                    └─────────────────────┘
+
+
+Agora ele faz mais 2:
+
+                    2 requests
+                           ↓
+                    ┌─────────────────────┐
+                    │                     │  0 tokens
+                    └─────────────────────┘
+
+A próxima requisição não pode ser processada naquele momento.
+
+
+--------------------------------------------------------------------------------
+  O detalhe importante: os tokens voltam imediatamente
+--------------------------------------------------------------------------------
+
+Não é preciso esperar o balde ficar cheio de novo. Com 5 tokens/segundo:
+
+                    0s            1s            2s
+                     │             │             │
+                     0    +5  →    5    +5  →    10
+                                   │
+                                   ▼
+                    ┌─────────────────────┐
+                    │● ● ● ● ●            │  5 tokens
+                    └─────────────────────┘
+
+Depois de 1 segundo, o usuário já pode fazer mais 5 requests.
