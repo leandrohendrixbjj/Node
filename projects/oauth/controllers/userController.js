@@ -35,7 +35,7 @@ exports.create_account = async (req, res) => {
     }
 };
 
-exports.login = async (req, res) => {
+exports.login = async (req, res, next) => {
     const { email, password } = req.body;
     const isRequestJson = req.is('application/json');
 
@@ -44,14 +44,31 @@ exports.login = async (req, res) => {
     try {
         const validatedUser = await user.validateCredentials();
 
-        if (isRequestJson) {
-            return res.status(200).json({
-                message: 'Credenciais válidas',
-                user: validatedUser
-            });
-        }
+        req.session.regenerate((err) => {
+            if (err) {
+                return next(err);
+            }
 
-        res.redirect('/members');
+            req.session.user = {
+                username: validatedUser.username,
+                email: validatedUser.email
+            };
+
+            req.session.save((saveErr) => {
+                if (saveErr) {
+                    return next(saveErr);
+                }
+
+                if (isRequestJson) {
+                    return res.status(200).json({
+                        message: 'Credenciais válidas',
+                        user: validatedUser
+                    });
+                }
+
+                return res.redirect('/members');
+            });
+        });
     } catch (err) {
         const status = err.statusCode || 500;
         const message = status === 500 ? 'Erro interno do servidor' : err.message;
