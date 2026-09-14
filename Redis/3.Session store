@@ -1,0 +1,115 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                         REDIS · SESSION STORE                                ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  1 · O QUE É UMA SESSÃO?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Imagine um usuário fazendo login.
+
+O servidor valida usuário/senha, grava o estado da sessão no Redis e devolve
+ao navegador só um identificador — não o payload inteiro.
+
+    POST /login
+         │
+         ▼
+    usuário / senha
+         │
+         ▼
+        API
+         │
+         ▼
+       Redis
+         │
+         ▼
+    session:abc123
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  2 · O QUE O REDIS GUARDA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A chave é o id da sessão; o valor é o estado do usuário.
+
+    session:abc123
+         │
+         └── {
+               userId: 12345,
+               role: "admin",
+               createdAt: "...",
+               ...
+             }
+
+O navegador recebe apenas o identificador:
+
+    Cookie: sessionId=abc123
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  3 · NAS PRÓXIMAS REQUISIÇÕES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A aplicação sabe quem é o usuário sem colocar todas as informações da sessão
+no cookie. Basta o id; o restante vem do Redis.
+
+    GET /clientes
+    Cookie: sessionId=abc123
+                    │
+                    ▼
+                   API
+                    │
+                    ▼
+           Redis GET session:abc123
+                    │
+                    ▼
+              usuário 12345
+
+Redis encaixa bem nesse fluxo porque a sessão é:
+
+    ┌────────────────────────────────────────────────────────────────────┐
+    │  leitura frequente  +  dados temporários  +  expiração (TTL)       │
+    └────────────────────────────────────────────────────────────────────┘
+
+Depois de um período a sessão expira sozinha. Não é preciso uma rotina para
+procurar sessões antigas uma por uma.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  4 · POR QUE CENTRALIZAR NO REDIS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Todas as APIs consultam o mesmo lugar, não importa em qual pod o usuário cair.
+Isso importa em ambientes com várias réplicas — por exemplo, Kubernetes.
+
+                           ┌──────────────┐
+                           │   Browser    │
+                           └──────┬───────┘
+                                  │
+                           Cookie: sessionId
+                                  │
+                                  ▼
+                           ┌──────────────┐
+                           │ Load Balancer│
+                           └──────┬───────┘
+                                  │
+                     ┌────────────┼────────────┐
+                     ▼            ▼            ▼
+                  API #1        API #2       API #3
+                     │            │            │
+                     └────────────┼────────────┘
+                                  │
+                                  ▼
+                           ┌──────────────┐
+                           │    Redis     │
+                           │ Session Store│
+                           └──────────────┘
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  RESUMO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  • Cookie leva só o id; o estado da sessão fica no Redis.
+  • TTL expira a sessão sozinho — sem varrer sessões antigas.
+  • Várias APIs / pods leem o mesmo store; a sessão não fica presa a um processo.

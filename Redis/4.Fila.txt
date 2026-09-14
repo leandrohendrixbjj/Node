@@ -1,0 +1,117 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                              REDIS · FILA                                    ║
+║                     FIFO, produtor/consumidor e message queue                ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  1 · O QUE É UMA FILA?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Uma fila é uma estrutura em que quem chega primeiro é atendido primeiro.
+FIFO — First In, First Out. João entrou primeiro, então sai primeiro.
+
+         ENTRADA                                      SAÍDA
+            │                                           │
+            ▼                                           ▼
+       ┌──────┐    ┌──────┐    ┌──────┐    ┌──────┐
+       │ Ana  │ →  │Pedro │ →  │Maria │ →  │ João │
+       └──────┘    └──────┘    └──────┘    └──────┘
+          4º          3º          2º          1º
+                                           (sai primeiro)
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  2 · TRAZENDO PARA SOFTWARE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Produtor   → quem coloca mensagens na fila.
+  Consumidor → quem retira mensagens da fila e processa.
+
+                         PRODUTOR
+                            │
+                            │  gera trabalho
+                            ▼
+                      ┌───────────┐
+                      │   FILA    │
+                      └─────┬─────┘
+                            │
+                            │  pega trabalho
+                            ▼
+                        CONSUMIDOR
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  3 · POR QUE USAR UMA FILA?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+O motivo principal é desacoplar quem produz o trabalho de quem o executa.
+
+    Sem fila                              Com fila
+
+        API                                   API
+         │                                     │
+         ├── processa                          └── coloca tarefa na fila
+         ├── consulta banco                              │
+         ├── chama serviço                               ▼
+         ├── envia e-mail                            responde
+         └── termina                                     │
+                                                         ▼
+                                                     CONSUMER
+                                                         │
+                                                         ├── processa
+                                                         ├── consulta banco
+                                                         └── envia e-mail
+
+A API responde cedo; o trabalho pesado fica com o consumidor.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  4 · VÁRIOS CONSUMIDORES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Dá para aumentar a capacidade de processamento só adicionando consumidores.
+É uma forma simples de escala horizontal.
+
+                            FILA
+                             │
+                ┌────────────┼────────────┐
+                ▼            ▼            ▼
+           Consumer 1    Consumer 2    Consumer 3
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  5 · E SE O SERVIDOR MORRER?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+O que acontece com a mensagem que estava em processamento?
+Sem um mecanismo de segurança, o trabalho pode se perder.
+
+Por isso, em filas de verdade, aparecem conceitos como:
+
+┌────────────────────────┬─────────────────────────────────────────────────────┐
+│ Conceito               │ Ideia                                               │
+├────────────────────────┼─────────────────────────────────────────────────────┤
+│ acknowledgement (ACK)  │ Confirmar que a mensagem foi processada             │
+│ retry                  │ Tentar de novo após falha                           │
+│ redelivery             │ Reenviar a mensagem para outro consumidor           │
+│ dead-letter queue      │ Isolar mensagens que falharam demais (DLQ)          │
+│ visibility timeout     │ Esconder a mensagem enquanto alguém processa        │
+│ durabilidade           │ Sobreviver a restart / queda                        │
+│ ordering               │ Manter (ou não) a ordem das mensagens               │
+│ at-least-once          │ Pode duplicar; não perde                            │
+│ at-most-once           │ Não duplica; pode perder                            │
+│ exactly-once           │ Processar uma vez — o mais difícil                  │
+└────────────────────────┴─────────────────────────────────────────────────────┘
+
+Aí a conversa deixa de ser só FIFO e passa a ser message queue.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  RESUMO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  • Fila = FIFO: quem entra primeiro sai primeiro.
+  • Produtor enfileira; consumidor processa — os dois ficam desacoplados.
+  • Vários consumidores = escala horizontal simples.
+  • Fila de verdade precisa de ACK, retry, DLQ, durabilidade, garantias de entrega.

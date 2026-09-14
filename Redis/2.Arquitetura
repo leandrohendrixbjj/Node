@@ -1,0 +1,155 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                         REDIS · ARQUITETURA INTERNA                          ║
+║                  Event loop, threads e execução de comandos                  ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  1 · REDIS É SINGLE-THREADED?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Sim — para a execução dos comandos.
+
+O Redis possui uma thread principal (main thread) que executa os comandos que
+alteram ou consultam as estruturas de dados em memória. As requisições são
+processadas uma por vez, sequencialmente.
+
+Exemplo:
+
+    Cliente A ──► SET user:1 "Leandro"
+    Cliente B ──► GET user:2
+    Cliente C ──► INCR contador
+
+Na prática, uma operação por vez:
+
+                              Redis
+                                │
+                                ▼
+                        ┌───────────────┐
+                        │  Main Thread  │
+                        └───────┬───────┘
+                                │
+                   ┌────────────┼────────────┐
+                   ▼            ▼            ▼
+                  SET          GET          INCR
+                   │            │            │
+                   └────────────┴────────────┘
+                            sequencial
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  2 · ENTÃO POR QUE ELE ATENDE MILHARES DE CLIENTES?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Porque usa event loop + I/O não bloqueante. Ele não fica parado esperando cada
+cliente individualmente: o sistema operacional informa quando um socket está
+pronto para leitura/escrita, e o Redis processa esses eventos.
+
+Enquanto não há trabalho, a thread não fica ocupada em espera ativa. Ela aguarda
+eventos de rede e só processa quando o SO avisa que há dados disponíveis.
+
+                              Clientes
+                       ↙          ↓          ↘
+                   Cliente     Cliente     Cliente
+                       ╲          │          ╱
+                        ╲         │         ╱
+                         ▼        ▼        ▼
+                        ┌──────────────────┐
+                        │    Event Loop    │
+                        └────────┬─────────┘
+                                 │
+                                 ▼
+                        ┌──────────────────┐
+                        │   Main Thread    │
+                        └────────┬─────────┘
+                                 │
+                    ┌────────────┼────────────┐
+                    ▼            ▼            ▼
+                   GET          SET          INCR
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  3 · MAS É REALMENTE UMA ÚNICA THREAD?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Não literalmente — e essa distinção é importante.
+
+O Redis moderno possui outras threads para determinadas tarefas. Desde o Redis 6
+existem I/O threads que podem cuidar de operações de rede, como leitura e escrita
+dos sockets. No Redis 8 esse mecanismo foi aprimorado.
+
+    ┌────────────────────────────────────────────────────────────────────┐
+    │  Forma mais precisa de dizer:                                      │
+    │  "O Redis possui execução de comandos predominantemente            │
+    │   single-threaded."                                                │
+    └────────────────────────────────────────────────────────────────────┘
+
+O ponto principal continua valendo:
+
+                              Redis
+                                │
+                    ┌───────────┴───────────┐
+                    │                       │
+                    ▼                       ▼
+              I/O Threads             Main Thread
+                    │                       │
+             leitura/escrita          EXECUÇÃO DOS
+              de sockets                COMANDOS
+                                            │
+                                    GET / SET / HSET
+                                    INCR / LPUSH / etc.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  4 · A CONSEQUÊNCIA IMPORTANTE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Um comando muito pesado bloqueia todos os outros clientes.
+
+    Cliente A
+      │
+      ▼
+    comando pesado
+      │
+      │  ← Main Thread ocupada
+      │
+      ▼
+    terminou
+
+    Cliente B ─────────────────────────────►  esperando
+    Cliente C ─────────────────────────────►  esperando
+    Cliente D ─────────────────────────────►  esperando
+
+É por isso que comandos que percorrem grandes quantidades de dados precisam de
+cuidado. A própria documentação do Redis destaca que um comando lento faz os
+demais clientes aguardarem.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  5 · ARMADILHAS E BOAS PRÁTICAS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+┌────────────────────────┬─────────────────────────────────────────────────────┐
+│ Problema               │ Boa prática                                         │
+├────────────────────────┼─────────────────────────────────────────────────────┤
+│ KEYS *                 │ Usar SCAN                                           │
+│ SMEMBERS gigantesco    │ Paginar / modelar melhor                            │
+│ LRANGE enorme          │ Trabalhar em lotes                                  │
+│ HGETALL gigante        │ Buscar somente os campos necessários                │
+│ Payloads enormes       │ Dividir ou armazenar fora do Redis                  │
+│ Comandos repetitivos   │ Usar comandos em lote / pipelines quando couber     │
+│ Operações complexas    │ Avaliar Lua/scripts com cuidado                     │
+│ Estruturas gigantes    │ Rever o modelo de dados                             │
+│ Comando desconhecido   │ Medir latência antes de colocar em produção         │
+└────────────────────────┴─────────────────────────────────────────────────────┘
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  RESUMO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  • Comandos executam em uma única thread, um por vez.
+  • A escala vem do event loop com I/O não bloqueante, não de paralelismo.
+  • Existem threads auxiliares (I/O, desde o Redis 6), mas não para executar
+    comandos.
+  • Portanto: nenhum comando pode ser lento. Latência de um = latência de todos.

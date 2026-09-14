@@ -1,0 +1,70 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                              REDIS · O QUE É                                 ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  1 · DEFINIÇÃO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+O Redis é um banco de dados NoSQL em memória, baseado principalmente no modelo
+chave → valor. É conhecido pela baixa latência e pela alta velocidade.
+
+Exemplo:
+
+                              REDIS
+                                │
+                    ┌───────────┴───────────┐
+                    │                       │
+                   KEY                    VALUE
+                    │                       │
+                "user:123"         {"nome":"João", ...}
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  2 · POR QUE ELE É TÃO RÁPIDO?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Principalmente porque os dados ficam na memória RAM, em vez de depender
+primariamente de leitura em disco. Isso permite operações com latência muito
+baixa.
+
+Redis também possui mecanismos de persistência em disco — então os dados não
+são necessariamente perdidos ao reiniciar.
+
+    ┌────────────────────────────────────────────────────────────────────┐
+    │  RAM  →  velocidade (leitura/escrita em memória)                   │
+    │  Disco → durabilidade (RDB / AOF, se configurados)                 │
+    └────────────────────────────────────────────────────────────────────┘
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  3 · BANCO OU CACHE?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Pode ser os dois.
+
+O Redis também pode funcionar como:
+
+┌────────────────────┬─────────────────────────────────────────────────────────┐
+│ Papel              │ Uso típico                                              │
+├────────────────────┼─────────────────────────────────────────────────────────┤
+│ Cache              │ Dados quentes, TTL, invalidação                         │
+│ Session store      │ Sessões de usuário em memória                           │
+│ Fila               │ Listas / streams como fila de trabalho                  │
+│ Pub/Sub            │ Mensagens entre produtores e consumidores               │
+│ Rate limiter       │ Contar e limitar requisições                            │
+│ Contador           │ Incrementos atômicos (INCR)                             │
+│ Leaderboard        │ Rankings com sorted sets                                │
+│ Streams / eventos  │ Log de eventos e consumo                                │
+│ Banco NoSQL        │ Persistência chave → valor como fonte de dados          │
+└────────────────────┴─────────────────────────────────────────────────────────┘
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  RESUMO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  • Redis = NoSQL em memória, modelo chave → valor.
+  • A velocidade vem da RAM; persistência em disco é opcional, mas existe.
+  • Não é só cache: também fila, sessão, pub/sub, limite de taxa, ranking etc.
