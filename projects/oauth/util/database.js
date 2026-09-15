@@ -1,6 +1,6 @@
 const mongodb = require('mongodb');
 const MongoClient = mongodb.MongoClient;
-const mongoURI = 'mongodb://localhost:27017/';
+const mongoURI = 'mongodb://localhost:27017/OAuth';
 
 let _db;
 

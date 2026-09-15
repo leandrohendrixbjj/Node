@@ -9,7 +9,7 @@ const sessionStore = require('./util/sessionStorage')
 const app = express();
 const port = 3000;
 
-const sessionMaxAge = Function(`"use strict"; return (${process.env.MAXAGE})`)();
+const sessionMaxAge = Number(process.env.MAXAGE) || 1000*60;
 
 app.use(express.static('public'));
 app.set('view engine', 'ejs');
@@ -23,7 +23,7 @@ app.use(session({
     store: sessionStore,
     cookie: {
         httpOnly: true,
-        maxAge: sessionMaxAge || 1000*60 // 30 day
+        maxAge: sessionMaxAge
     }
 }));
 
