@@ -1,0 +1,198 @@
+================================================================================
+                    HTTP NO NODE — DO TCP ATÉ O CALLBACK
+================================================================================
+
+Quando uma requisição HTTP chega, ela primeiro existe como dados em uma
+conexão TCP. O Node precisa transformar esses bytes em uma requisição HTTP
+que o JavaScript consiga tratar.
+
+Nesse momento ainda não existe uma requisição HTTP sendo processada. O
+servidor está simplesmente preparado para receber conexões.
+
+
+================================================================================
+                       1. O SERVIDOR ESTÁ ESCUTANDO
+================================================================================
+
+  const http = require('http');
+
+  const server = http.createServer((req, res) => {
+     console.log(req.method);
+     console.log(req.url);
+
+     res.end('Olá!');
+  });
+
+  server.listen(3000);
+
+
+================================================================================
+                 2. O CLIENTE FAZ UMA REQUISIÇÃO: GET /usuarios
+================================================================================
+
+A rede não entrega isso ao Node como um objeto req. Na prática, temos uma
+sequência de bytes:
+
+                         Cliente
+                            │
+                            │ bytes
+                            ▼
+                          TCP
+                            │
+                            ▼
+                   Sistema Operacional
+                            │
+                            ▼
+                      socket :3000
+
+  • O SO recebe os dados através da conexão TCP
+  • Ainda não existe req / res — só atividade no socket
+
+
+================================================================================
+              3. O SO INFORMA QUE EXISTE ATIVIDADE — A LIBUV MONITORA
+================================================================================
+
+A libuv está monitorando os sockets. Quando o SO avisa, o Event Loop entra
+na fase poll e encontra um evento de I/O que pode ser processado.
+
+                   Sistema Operacional
+                            │
+                            │  "socket possui atividade"
+                            ▼
+                          libuv
+                            │
+                            ▼
+                           POLL
+
+
+Neste momento:
+
+                          POLL
+                            │
+                            ├── detectou atividade no socket
+                            │
+                            ▼
+                       Node / libuv
+                            │
+                            ▼
+                    processamento HTTP
+                            │
+                            ▼
+                  callback createServer()
+
+O Node trata os bytes recebidos e constrói a representação que o código
+JavaScript recebe: (req, res).
+
+
+================================================================================
+                           4. FLUXO SIMPLIFICADO
+================================================================================
+
+                        Browser
+                           │
+                           │ HTTP
+                           ▼
+                  Sistema Operacional
+                           │
+                           │ TCP socket
+                           ▼
+                    Node.js / libuv
+                           │
+                           │ dados recebidos
+                           ▼
+                       Node HTTP
+                           │
+                           │ interpreta HTTP
+                           ▼
+                 request (req) + response (res)
+                           │
+                           ▼
+                 seu callback JavaScript
+
+
+================================================================================
+                      5. DOIS CAMINHOS: REQUEST E RESPONSE
+================================================================================
+
+  REQUEST
+  ──────────────────────────────────────►
+
+      Cliente
+         ↓
+        TCP
+         ↓
+         SO
+         ↓
+       libuv
+         ↓
+        POLL
+         ↓
+     Node HTTP
+         ↓
+     JavaScript
+
+
+  RESPONSE
+  ◄──────────────────────────────────────
+
+     JavaScript
+         ↓
+     Node HTTP
+         ↓
+       libuv
+         ↓
+         SO
+         ↓
+        TCP
+         ↓
+      Cliente
+
+
+================================================================================
+                    6. QUEM INTERPRETA HTTP NO LADO DO CLIENTE
+================================================================================
+
+Na resposta HTTP, quem interpreta os dados como HTTP no lado do cliente é
+o browser.
+
+                    Seu código
+                         │
+                         │  res.end("Olá!")
+                         ▼
+                    Node.js HTTP
+                         │
+                         │  bytes da resposta HTTP
+                         ▼
+                       libuv
+                         │
+                         │  write no socket
+                         ▼
+                Sistema Operacional
+                         │
+                         │  TCP
+                         ▼
+                        Rede
+                         │
+                         ▼
+          Browser  (TCP → HTTP, no navegador)
+
+
+================================================================================
+                                RESUMO
+================================================================================
+
+Tudo começa quando o Node sobe um servidor escutando em uma porta. Por baixo
+dos panos, é a libuv quem interage com o Sistema Operacional.
+
+Quando o browser faz uma requisição (http://localhost:3000), o SO recebe os
+pacotes TCP e a libuv captura esse evento de I/O de rede. O Node pega esses
+bytes crus do socket, faz o parsing para HTTP e injeta o callback
+correspondente na fase Poll do Event Loop. É nessa fase que executamos o
+nosso código de rota (req, res).
+
+Na hora de responder, o fluxo é simétrico: quando chamamos res.end(), o Node
+escreve os dados de volta no socket. A libuv gerencia essa escrita de forma
+assíncrona com o Sistema Operacional, que converte isso em pacotes TCP
+enviados pela rede de volta ao browser, onde o cliente faz a interpretação
+final.
