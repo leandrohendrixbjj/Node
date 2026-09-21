@@ -83,3 +83,21 @@ exports.login = async (req, res, next) => {
         });
     }
 };
+
+exports.logout = (req, res, next) => {
+    const isRequestJson = req.is('application/json');
+
+    req.session.destroy((err) => {
+        if (err) {
+            return next(err);
+        }
+
+        res.clearCookie('connect.sid');
+
+        if (isRequestJson) {
+            return res.status(200).json({ message: 'Sessão encerrada' });
+        }
+
+        return res.redirect('/');
+    });
+};

@@ -216,6 +216,9 @@ button:hover {
     text-decoration: none;
     background-color: var(--offwhite);
     color: var(--background-color);
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
     border-radius: 0.3rem;
     width: 6.5rem;
     height: 1.6rem;
