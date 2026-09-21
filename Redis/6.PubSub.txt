@@ -1,0 +1,100 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                           REDIS · PUB / SUB                                  ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+Redis Pub/Sub é um mecanismo de distribuição de mensagens em tempo real.
+
+Espírito: aconteceu alguma coisa. Quem estiver interessado pode ficar sabendo.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  1 · COMO FUNCIONA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  • O Publisher publica uma mensagem em um Channel
+  • Os Subscribers inscritos naquele Channel recebem a mensagem
+
+Fluxo:
+
+                    ┌──────────────────────────┐
+                    │          REDIS           │
+                    │                          │
+  Publisher ──────► │         Canal            │ ──────► Subscriber A
+                    │                          │ ──────► Subscriber B
+                    │                          │ ──────► Subscriber C
+                    └──────────────────────────┘
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  2 · O CONCEITO MAIS IMPORTANTE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+No Pub/Sub, o Channel não é uma fila.
+
+Se o Publisher publicar, A, B e C recebem a mensagem:
+
+                         ticket.created
+                               │
+                    ┌──────────┼──────────┐
+                    ▼          ▼          ▼
+               Serviço A  Serviço B  Serviço C
+
+Se o Subscriber estiver offline: ele não recebe a mensagem. Perdeu.
+
+  • O Redis entrega só para os subscribers conectados naquele momento
+  • Não existe fila de mensagens pendentes para aquele subscriber
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  3 · PARA QUE SERVE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+É especialmente bom para notificação em tempo real.
+
+                      Ticket atualizado
+                             │
+                             ▼
+                       Redis Pub/Sub
+                             │
+            ┌────────────┬───┴────┬────────────┐
+            ▼            ▼        ▼            ▼
+      notificação    auditoria  cache     WebSocket
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  4 · PUB/SUB × QUEUE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ┌────────────┐     avise todos que estão interessados
+  │  Pub/Sub   │ ──────────────────────────────────────►
+  └────────────┘     assinatura ativa: Redis envia sozinho
+
+  ┌────────────┐     um trabalho que alguém precisa processar
+  │   Queue    │ ──────────────────────────────────────►
+  └────────────┘     consumidor puxa a mensagem (pode bloquear)
+
+  • Queue   → o consumidor executa uma operação de consumo (POP/BLPOP)
+              para obter a mensagem; se a fila estiver vazia, pode ficar
+              bloqueado aguardando
+  • Pub/Sub → o consumidor mantém uma assinatura ativa; o Redis envia a
+              mensagem automaticamente quando ela é publicada no canal
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  5 · DIFERENÇAS QUE VALEM DECORAR
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ┌──────────────────────────┬──────────────────────┬──────────────────────────┐
+  │ Característica           │ Redis Pub/Sub        │ Redis Queue              │
+  ├──────────────────────────┼──────────────────────┼──────────────────────────┤
+  │ Modelo                   │ Broadcast            │ Work queue               │
+  │ Mensagem                 │ Evento / notificação │ Trabalho                 │
+  │ Vários consumidores      │ Todos recebem        │ Normalmente um processa  │
+  │ Histórico                │ Não                  │ Pode existir             │
+  │ Perde se estiver offline │ Sim                  │ Normalmente não          │
+  │ ACK                      │ Não                  │ Pode existir             │
+  │ Retry nativo             │ Não                  │ Pode existir             │
+  │ Reprocessamento          │ Não                  │ Pode existir             │
+  │ Persistência             │ Não                  │ Depende da implementação │
+  │ Uso típico               │ Eventos em tempo real│ Processamento assíncrono │
+  └──────────────────────────┴──────────────────────┴──────────────────────────┘
