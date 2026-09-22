@@ -1,0 +1,176 @@
+1. O que é um Stream?
+
+  - Um Redis Stream é uma estrutura de dados do Redis que representa uma sequência ordenada de registros (entries).
+  - Você adiciona registros ao final do Stream.
+  - A cada registro o Redis atribui um ID único e ordenado.
+  - IDs são importantes porque permitem saber onde você está dentro do Stream.
+
+  - Stream: pedidos
+
+    ┌────────┬─────────────────────────────┐
+    │ ID     │ Dados                       │
+    ├────────┼─────────────────────────────┤
+    │ 1-0    │ pedido=100, evento=criado   │
+    │ 2-0    │ pedido=101, evento=criado   │
+    │ 3-0    │ pedido=102, evento=alterado │
+    │ 4-0    │ pedido=103, evento=fechado  │
+    └────────┴─────────────────────────────┘  
+
+
+2. Para que ele serve?
+
+  - A finalidade principal é permitir que uma aplicação registre acontecimentos e depois permita que outras aplicações consumam 
+    esses acontecimentos de maneira controlada.
+
+  - O Stream fica como uma espécie de linha do tempo dos acontecimentos.
+
+  - O sistema que fecha o ticket não precisa necessariamente executar imediatamente todo o processamento relacionado 
+    ao fechamento.  
+
+3. O que é esse ID?
+
+  - O Redis gera IDs no formato: timestamp-sequence. Isso garante uma ordenação.
+  - ( 1758561234567-0 ) O primeiro número está relacionado ao tempo e o segundo é uma sequência.      
+  - Você pode pensar no ID como um ponteiro dentro do histórico.
+
+4. Stream não é necessariamente infinito  
+
+  - Como ele armazena os registros, você precisa controlar seu tamanho.
+  - Você pode definir uma política de retenção.
+  - Mantenha aproximadamente os últimos 100 mil registros.
+
+
+5.A arquitetura:
+
+  - Os eventos ficam armazenados ( Eles não desaparecem simplesmente porque alguém leu. )
+  - Existe uma posição/ID que permite controlar a leitura.
+
+                 PRODUCER
+                    │
+                    │ XADD
+                    ▼
+        ┌──────────────────────┐
+        │     REDIS STREAM      │
+        │                      │
+        │ E1                   │
+        │ E2                   │
+        │ E3                   │
+        │ E4                   │
+        │ E5                   │
+        └──────────────────────┘
+                    │
+                    │ XREAD
+                    ▼
+                CONSUMER
+
+
+6. Mas existe um problema com vários Workers     
+  - Quem processa cada um?
+    
+  - Não queremos:
+    Worker 1 → ticket 101
+    Worker 2 → ticket 101    
+
+  - Queremos:
+    Worker 1 → ticket 101
+    Worker 2 → ticket 102
+    Worker 1 → ticket 104
+
+  - É aqui que entra o Consumer Group.  
+    
+
+                 Stream
+                   │
+          ┌────────┼────────┐
+          ▼        ▼        ▼
+       Worker 1 Worker 2 Worker 3
+
+7. Consumer Group       
+
+  - é uma maneira de criar um grupo coordenado de consumidores que trabalham sobre um Stream.
+  - permite ao Redis controlar quais mensagens foram entregues para quais consumidores.
+  - isso é chamado de distribuição das mensagens entre os consumidores do grupo.
+
+  - cenário:
+
+                     Redis
+                      │
+                Redis Stream
+                      │
+          ┌───────────┼───────────┐
+          │           │           │
+        Pod 1       Pod 2       Pod 3
+        Worker      Worker      Worker
+  
+  - Se os 3 pods forem consumidores do mesmo Stream, você pode colocar os três dentro de um único Consumer Group.
+  - Os três pods podem estar conectados ao mesmo Redis:
+  - O Consumer Group não representa o Redis. Ele representa um grupo lógico de consumidores de um Stream.
+
+                   Redis
+                   │
+        ┌──────────┼──────────┐
+        │          │          │
+      Pod 1      Pod 2      Pod 3
+        │          │          │
+    Consumer 1  Consumer 2  Consumer 3
+        └──────────┼──────────┘
+                   │
+              mesmo Stream
+
+
+8. Pending             
+ - Eu entreguei essa mensagem para esse consumidor, mas ele ainda não confirmou que terminou.
+ - A mensagem não volta automaticamente para o Stream e também não fica automaticamente disponível para outro consumer.
+ - Ela fica PENDING associada ao consumer que a recebeu.
+ - Ela saiu da lista de mensagens novas disponíveis para aquele Consumer Group. 
+ - Pod 1 que leu a msg morreu. Ela não volta automaticamente para o Stream. 
+ - Você define o tempo mínimo que uma mensagem precisa estar pendente antes de outro consumer poder reivindicá-la.
+ - min-idle-time = 60 segundos: Só permita que outro consumer reivindique essa mensagem se ela estiver sem atividade há 
+   pelo menos 60 segundos.
+ - Pending: Essa mensagem foi entregue a um consumer e ainda não recebeu ACK. ( não significa que o processamento falhou. ) 
+ - Obs: um tempo curto de min-idle-time pode causar uma duplicidade de processamento da mesma mensagem   
+
+                     Redis Stream
+                      │
+                      ▼
+               Consumer Group
+                      │
+             ┌────────┼────────┐
+             ▼        ▼        ▼
+           Pod 1    Pod 2    Pod 3
+             │
+             ▼
+          mensagem
+             │
+             ▼
+          PENDING
+             │
+       ┌─────┴──────┐
+       │            │
+    sucesso       Pod morreu
+       │            │
+      XACK          │
+                    ▼
+              60s sem atividade
+                    │
+                    ▼
+               Pod 2 claim
+                    │
+                    ▼
+                 retry
+
+    - Uma mensagem pode ficar PENDING indefinidamente se ninguém fizer XACK e ninguém implementar uma estratégia para tratá-la.
+    - Você precisa ter alguma política de finalização/recuperação.
+    - Imagine um payload inválido que não é feito um ack, ele pode ficar em loop dentro do Stream    
+
+9. ACK             
+ - Terminei de processar essa mensagem.
+ - ACK não significa: O Redis apagou o evento. Significa: Essa mensagem não está mais pendente para esse Consumer Group.
+ - Quem remove é outra operação, principalmente XDEL ou XTRIM.
+ - XDEL: remover mensagens específicas.
+ - XTRIM: manter aproximadamente as últimas 100 mensagens. Conforme novas mensagens entram, as antigas podem ser removidas 
+   para manter o tamanho controlado.
+ - Não existe automaticamente um XTRIM configurado no Redis para seu Stream. Você precisa definir como sua aplicação vai 
+   controlar a retenção.
+ - XTRIM, não valida se a msg teve um ack ele remove: mais antigas para as mais novas.  
+
