@@ -1,0 +1,83 @@
+═══════════════════════════════════════════════════════════════
+  EVENT LOOP  ·  FASE CHECK
+═══════════════════════════════════════════════════════════════
+
+
+1. O que é a fase check?
+
+  - A fase check existe principalmente para executar callbacks
+    registrados com setImmediate().
+
+  Fluxo simples:
+
+        timers
+          ↓
+        pending callbacks
+          ↓
+        poll
+          ↓
+        check
+          ↓
+        close callbacks
+          ↓
+          ↺
+
+
+───────────────────────────────────────────────────────────────
+
+2. Mas por que existe setImmediate()?
+
+  - Imagine que você está processando uma operação de I/O.
+  - Quando o readFile termina, o callback entra no fluxo de I/O.
+  - setImmediate() é uma maneira de dizer: depois que o Event Loop
+    terminar a etapa de I/O atual, execute esse callback.
+
+        readFile
+           │
+           ▼
+        callback de I/O
+           │
+           └── setImmediate()
+                     │
+                     ▼
+                 fase check
+
+
+───────────────────────────────────────────────────────────────
+
+3. Fase de poll
+
+  - Não é apenas filesystem. A fase check está relacionada ao fluxo
+    geral do Event Loop, e setImmediate() pode ser agendado a partir
+    de praticamente qualquer callback que esteja sendo executado no
+    contexto do Event Loop.
+
+  - O Event Loop processa eventos de I/O na fase poll; se durante
+    esse processamento alguém agenda um setImmediate(), esse callback
+    será executado na fase check.
+
+                     Event Loop
+                         │
+                         ▼
+                       timers
+                         │
+                         ▼
+                 pending callbacks
+                         │
+                         ▼
+                        poll
+                         │
+              ┌──────────┼──────────┐
+              │          │          │
+            socket      DB         fs
+             I/O        I/O        I/O
+              │          │          │
+              └──────────┼──────────┘
+                         │
+                         ▼
+                       check
+                         │
+                    setImmediate
+                         │
+                         ▼
+                   close callbacks

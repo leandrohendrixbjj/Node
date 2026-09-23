@@ -1,20 +1,25 @@
-1.Fluxo:
+═══════════════════════════════════════════════════════════════
+  NODE.JS  ×  BANCO DE DADOS
+═══════════════════════════════════════════════════════════════
+
+
+1. Fluxo geral
 
                     ┌──────────────┐
-                    │ Event Loop   │
+                    │  Event Loop  │
                     └──────┬───────┘
                            │
                     inicia operação
                            │
                            ▼
                     ┌──────────────┐
-                    │ Connection   │
-                    │ Pool         │
+                    │  Connection  │
+                    │     Pool     │
                     └──────┬───────┘
                            │
                   conexão disponível?
                      │             │
-                    não            sim
+                    não           sim
                      │             │
                      ▼             ▼
                  aguarda       envia SQL
@@ -30,201 +35,210 @@
                               envia dados
                                    │
                                    ▼
-                              TCP Socket
+                               TCP Socket
                                    │
                                    ▼
-                              Node recebe
+                               Node recebe
                                    │
                                    ▼
-                            Promise resolve
+                             Promise resolve
                                    │
                                    ▼
                               await retoma
 
-2.Primeiro ponto: o Node não "entra" no banco.
+
+───────────────────────────────────────────────────────────────
+
+2. Primeiro ponto: o Node não "entra" no banco
 
   - Quando fazemos: await db.query(sql);
   - Node não executa o SQL. Quem executa é o banco.
-  - O Node possui um cliente/driver responsável por conversar com o banco através do protocolo daquele banco.
+  - O Node possui um cliente/driver responsável por conversar com o banco
+    através do protocolo daquele banco.
 
-  Separação: 
+  Separação:
 
-      Aplicação
-        │
-        ▼
-      Driver
-        │
-        ▼
-      Protocolo de comunicação
-        │
-        ▼
-      Rede
-        │
-        ▼
-      Banco  
+                     Aplicação
+                         │
+                         ▼
+                       Driver
+                         │
+                         ▼
+             Protocolo de comunicação
+                         │
+                         ▼
+                        Rede
+                         │
+                         ▼
+                       Banco
+
+
+───────────────────────────────────────────────────────────────
 
 3. O papel do Event Loop
 
-  - Quando chega no:
+  - Quando chega no await db.query(sql):
   - o Node não fica parado esperando o banco.
-  - Durante o tempo em que o banco está trabalhando: o Event Loop pode continuar atendendo outras coisas.
+  - Durante o tempo em que o banco está trabalhando: o Event Loop pode
+    continuar atendendo outras coisas.
+
+        Event Loop
+            │
+            ▼
+        db.query()
+            │
+            ▼
+          driver
+            │
+            ▼
+        socket TCP
+            │
+            └──────────────► Banco
+                                 │
+                                 │ executa SQL
+                                 │
+                                 ▼
+                             resultado
+                                 │
+                                 ▼
+                               socket
+                                 │
+                                 ▼
+                          Node recebe dados
+                                 │
+                                 ▼
+                          Promise resolvida
+                                 │
+                                 ▼
+                           await continua
 
 
-  Event Loop
-    │
-    ▼
-db.query()
-    │
-    ▼
-driver
-    │
-    ▼
-socket TCP
-    │
-    └──────────────► Banco
-                         │
-                         │ executa SQL
-                         │
-                         ▼
-                    resultado
-                         │
-                         ▼
-                      socket
-                         │
-                         ▼
-                 Node recebe dados
-                         │
-                         ▼
-                  Promise resolvida
-                         │
-                         ▼
-                    await continua
+───────────────────────────────────────────────────────────────
 
-4. Connection Pool                    
+4. Connection Pool
 
- - Imagine que sua aplicação tenha: Pool = 5 conexões
- - Agora chegam 20 queries simultaneamente.
-     ┌──────────────────────────┐
-     │       Connection Pool    │
-     │                          │
-     │ Connection 1 ──────────┐ │
-     │ Connection 2 ──────────┤ │
-     │ Connection 3 ──────────┤ │
-     │ Connection 4 ──────────┤ │
-     │ Connection 5 ──────────┘ │
-     └──────────────────────────┘
+  - Imagine que sua aplicação tenha: Pool = 5 conexões
+  - Agora chegam 20 queries simultaneamente.
 
- 20 queries
-    │
-    ▼
-┌───────────────┐
-│ Pool = 5      │
-└───────────────┘
-    │
-    ├── Q1 → conexão 1
-    ├── Q2 → conexão 2
-    ├── Q3 → conexão 3
-    ├── Q4 → conexão 4
-    ├── Q5 → conexão 5
-    │
-    ├── Q6  → aguardando
-    ├── Q7  → aguardando
-    ├── Q8  → aguardando
-    └── ...
+        ┌──────────────────────────┐
+        │      Connection Pool     │
+        │                          │
+        │ Connection 1 ──────────┐ │
+        │ Connection 2 ──────────┤ │
+        │ Connection 3 ──────────┤ │
+        │ Connection 4 ──────────┤ │
+        │ Connection 5 ──────────┘ │
+        └──────────────────────────┘
+
+        20 queries
+            │
+            ▼
+        ┌───────────┐
+        │ Pool = 5  │
+        └───────────┘
+            │
+            ├── Q1 → conexão 1
+            ├── Q2 → conexão 2
+            ├── Q3 → conexão 3
+            ├── Q4 → conexão 4
+            ├── Q5 → conexão 5
+            │
+            ├── Q6 → aguardando
+            ├── Q7 → aguardando
+            ├── Q8 → aguardando
+            └── ...
 
   - Uma requisição que demora 10 segundos pode estar:
 
-    10s total
-      ├── 8s esperando conexão
-      ├── 1s esperando rede
-      └── 1s executando SQL
-    
-    OU
-
-    10s total
-    ├── 0s esperando conexão
-    ├── 0s rede
-    └── 10s executando SQL  
+        10s total                      10s total
+          ├── 8s esperando conexão       ├── 0s esperando conexão
+          ├── 1s esperando rede     OU   ├── 0s rede
+          └── 1s executando SQL          └── 10s executando SQL
 
 
-6. E o banco também tem seu próprio modelo de concorrência
+───────────────────────────────────────────────────────────────
 
-  - Exemplo:
-              Node.js
-             Event Loop
-                  │
-        ┌─────────┼─────────┐
-        ▼         ▼         ▼
-       DB        Redis      HTTP
+5. O banco também tem seu próprio modelo de concorrência
 
-  - No banco: 
+  - No Node:
 
-             PostgreSQL
-                  │
-       ┌──────────┼──────────┐
-       ▼          ▼          ▼
-   Query/      Query/      Query/
-   sessão      sessão      sessão    
+                     Node.js
+                    Event Loop
+                         │
+               ┌─────────┼─────────┐
+               ▼         ▼         ▼
+              DB       Redis      HTTP
 
+  - No banco:
+
+                    PostgreSQL
+                         │
+              ┌──────────┼──────────┐
+              ▼          ▼          ▼
+          Query/      Query/      Query/
+          sessão      sessão      sessão
 
   - O banco possui seus próprios mecanismos para:
-- conexões;
-- processos/threads;
-- memória;
-- cache;
-- locks;
-- transações;
-- índices;
-- páginas de dados;
-- WAL/redo log;
-- I/O de disco;
-- execução de queries.
+
+    - conexões;
+    - processos/threads;
+    - memória;
+    - cache;
+    - locks;
+    - transações;
+    - índices;
+    - páginas de dados;
+    - WAL/redo log;
+    - I/O de disco;
+    - execução de queries.
 
 
-Podemos desmontar isso:
+───────────────────────────────────────────────────────────────
 
-JavaScript
-    │
-    ▼
-Knex
-    │
-    │ gera SQL
-    ▼
-SQL
-    │
-    ▼
-Pool
-    │
-    ▼
-Conexão MySQL
-    │
-    ▼
-TCP
-    │
-    ▼
-MySQL
-    │
-    ├── recebe SQL
-    ├── parse
-    ├── otimização
-    ├── EXPLAIN interno
-    ├── escolha do índice
-    ├── leitura
-    ├── filtro
-    ├── join
-    └── retorna linhas
-    │
-    ▼
-TCP
-    │
-    ▼
-Driver
-    │
-    ▼
-Knex
-    │
-    ▼
-Promise resolve
-    │
-    ▼
-await continua
+6. Desmontando a stack completa
+
+        JavaScript
+            │
+            ▼
+           Knex
+            │
+            │ gera SQL
+            ▼
+           SQL
+            │
+            ▼
+           Pool
+            │
+            ▼
+       Conexão MySQL
+            │
+            ▼
+           TCP
+            │
+            ▼
+          MySQL
+            │
+            ├── recebe SQL
+            ├── parse
+            ├── otimização
+            ├── EXPLAIN interno
+            ├── escolha do índice
+            ├── leitura
+            ├── filtro
+            ├── join
+            └── retorna linhas
+            │
+            ▼
+           TCP
+            │
+            ▼
+          Driver
+            │
+            ▼
+           Knex
+            │
+            ▼
+      Promise resolve
+            │
+            ▼
+       await continua
