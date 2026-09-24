@@ -1,0 +1,93 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                           REDIS · RATE LIMITER                               ║
+║                  limite, burst e contador global no Redis                    ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  1 · O QUE É RATE LIMITER?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Um rate limiter controla quantas requisições um cliente pode fazer dentro
+de um limite.
+
+Exemplo: 100 requisições por minuto por usuário. A 101ª é bloqueada
+(HTTP 429).
+
+O objetivo pode ser proteger:
+
+  ┌────┬──────────────────────────────────────────────────────────────────┐
+  │ 1  │ API                                                              │
+  │ 2  │ Banco de dados                                                   │
+  │ 3  │ Redis                                                            │
+  │ 4  │ Serviços externos                                                │
+  │ 5  │ Um endpoint específico                                           │
+  │ 6  │ O próprio usuário contra abuso                                   │
+  └────┴──────────────────────────────────────────────────────────────────┘
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  2 · ONDE COLOCAR O RATE LIMITER?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+O rate limiter precisa enxergar o tráfego global, e não apenas o tráfego
+de um pod. Por isso, em ambiente distribuído, o Redis é muito útil: ele
+guarda o contador que todos os pods consultam.
+
+                         Cliente
+                            │
+                            ▼
+                     ┌─────────────┐
+                     │ Load Balancer│
+                     └──────┬──────┘
+              ┌─────────────┼─────────────┐
+              ▼             ▼             ▼
+           ┌──────┐     ┌──────┐     ┌──────┐
+           │ Pod 1│     │ Pod 2│     │ Pod 3│
+           └──┬───┘     └──┬───┘     └──┬───┘
+              └─────────────┼─────────────┘
+                            ▼
+                     ┌─────────────┐
+                     │    REDIS    │
+                     │  contador   │
+                     │   global    │
+                     └─────────────┘
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  3 · ALGORITMOS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  • Fixed Window
+  • Sliding Window
+  • Leaky Bucket
+  • Token Bucket
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  4 · TOKEN BUCKET
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Para Node.js + Redis, comece pelo Token Bucket. Ele ajuda a entender limite,
+burst, concorrência e atomicidade no Redis.
+
+  • Você possui um "balde" de tokens
+  • Os tokens são repostos continuamente
+  • Cada request consome um token
+  • Sem token → a requisição é bloqueada
+
+                    ┌─────────────────┐
+                    │  🪙   🪙   🪙   │
+                    │     🪙   🪙     │
+                    │        🪙       │
+                    └────────┬────────┘
+                             │
+                             ▼
+                          request
+                             │
+                    ┌────────┴────────┐
+                    ▼                 ▼
+               tem token          sem token
+                    │                 │
+                    ▼                 ▼
+                 segue              HTTP 429
