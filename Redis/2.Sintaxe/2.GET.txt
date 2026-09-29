@@ -1,0 +1,2 @@
+SET contador:login 2
+GET contador:login

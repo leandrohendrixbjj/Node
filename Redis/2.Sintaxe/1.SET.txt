@@ -1,0 +1,41 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                              REDIS · SET                                     ║
+║                    atribuição, expiração e condição                          ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  1 · SET
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  SET key value [expiration] [condition]
+
+Simples:
+
+  SET usuario:1 "Leandro"
+
+Com expiração (1 hora):
+
+  SET usuario:1 "Leandro" EX 3600
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  2 · ATRIBUIÇÃO + EXPIRAÇÃO + CONDIÇÃO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  SET contador:login 1 EX 60 NX
+
+  NX — somente se NÃO existir
+
+Crie contador:login com valor 1, faça a chave expirar em 60 segundos,
+mas somente se ela ainda não existir.
+
+  ┌────────────────────────────────────┬──────────────────────────────────┐
+  │ Comando                            │ Efeito                           │
+  ├────────────────────────────────────┼──────────────────────────────────┤
+  │ SET user:1 "Maria"                 │ Criar user Maria                 │
+  │ SET user:1 "Leandro" XX            │ Alterar para Leandro só se       │
+  │                                    │ Maria existir                    │
+  └────────────────────────────────────┴──────────────────────────────────┘
+
+  XX — somente se existir
