@@ -16,6 +16,16 @@ app.set('view engine', 'ejs');
 app.use(express.urlencoded({ extended: true })); // form HTML
 app.use(express.json());                         // Postman (raw JSON)
 
+/*
+ * EXPRESS-SESSION
+ *
+ * Antes de cada requisição:
+ *
+ *   1. Confere a assinatura do cookie com o SESSION_SECRET.
+ *   2. Pega o id da sessão que está no cookie.
+ *   3. Busca esse id na coleção sessions.
+ *   4. Coloca o documento em req.session.
+ */
 app.use(session({
     secret: process.env.SESSION_SECRET,
     resave: false,

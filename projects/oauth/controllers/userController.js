@@ -44,16 +44,38 @@ exports.login = async (req, res, next) => {
     try {
         const validatedUser = await user.validateCredentials();
 
+        /*
+         * CONNECT.SID
+         *
+         * req.session.regenerate gera um id aleatório.
+         * Exemplo: U4nYs10k6KPkBtU6ZsMtBPadACKPRTI
+         *
+         * O cookie connect.sid guarda esse id junto com uma assinatura.
+         * No Chrome o valor aparece codificado:
+         *
+         *   s%3AslRWLSkWhEQIUUqqmNbGOxokkbtg6ofw.Y2c%2FJq2pgtsY2L6dcD7O8jT4dIn4Znfm6zNu1KS%2BqGg
+         *
+         * Partes:
+         *   s%3A
+         *     Prefixo fixo. Decodificado, é "s:".
+         *
+         *   slRWLSkWhEQIUUqqmNbGOxokkbtg6ofw
+         *     Id da sessão. É aleatório e é o _id gravado no Mongo.
+         *
+         *   Y2c%2FJq2pgtsY2L6dcD7O8jT4dIn4Znfm6zNu1KS%2BqGg
+         *     Assinatura desse id, calculada com SESSION_SECRET.
+         */
         req.session.regenerate((err) => {
             if (err) {
                 return next(err);
             }
-
+            // 2. Grava req.session.user com username e email.
             req.session.user = {
                 username: validatedUser.username,
                 email: validatedUser.email
             };
 
+            // req.session.save persiste esse objeto na coleção sessions, com esse id como _id.
             req.session.save((saveErr) => {
                 if (saveErr) {
                     return next(saveErr);
