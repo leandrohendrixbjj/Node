@@ -1,0 +1,57 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                             REDIS · CONTADOR                                 ║
+║                    INCR atômico para eventos concorrentes                    ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  1 · O QUE É UM CONTADOR NO REDIS?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Imagine que queremos contar quantas requisições uma API recebeu.
+
+  • Uma operação que pode ser executada no máximo 3 vezes
+  • 100 requisições por minuto por usuário
+  • Contabilizar eventos concorrentes sem perder incrementos
+
+Trabalha somente com valores inteiros armazenados como strings no Redis.
+
+Podemos simplesmente fazer:
+
+  ┌────┬──────────────────────────────────────────────────────────────────┐
+  │ 1  │ SET api:requests 0                                               │
+  │ 2  │ INCR api:requests                                                │
+  │ 3  │ O valor passa de:  0 → 1 → 2 → 3 → 4 → ...                       │
+  └────┴──────────────────────────────────────────────────────────────────┘
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  2 · INCR É ATÔMICO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+O Redis garante que o incremento acontece como uma única operação
+indivisível.
+
+Duas requisições podem chegar praticamente ao mesmo tempo. Não existe o
+problema de as duas lerem 10 e ambas gravarem 11.
+
+                    Requisição A ──┐
+                                   ├──►  INCR contador
+                    Requisição B ──┘
+
+Se o contador está em 10:
+
+                    A  →  INCR  →  11
+                    B  →  INCR  →  12
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  3 · UMA FORMA BOA DE ENXERGAR O INCR
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+                 Request ──┐
+                 Request ──┤
+                           ├──►  ┌──────────────┐
+                 Request ──┤     │  Redis INCR  │ ──►  contador + 1
+                 Request ──┘     │   ATÔMICO    │
+                                 └──────────────┘
