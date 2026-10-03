@@ -1,0 +1,92 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                           REDIS · LEADERBOARD                                ║
+║                    ranking em tempo real com Sorted Set                      ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  1 · O QUE É UM LEADERBOARD?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Um leaderboard é um ranking ordenado. No Redis, ele pode ser implementado
+com um Sorted Set (ZSET), que associa cada jogador a uma pontuação (score).
+
+  ┌─────────┬──────────────┬──────────┐
+  │ Posição │ Jogador      │ Pontos   │
+  ├─────────┼──────────────┼──────────┤
+  │    🥇 1 │ João         │     9800 │
+  │    🥈 2 │ Maria        │     8500 │
+  │    🥉 3 │ Carlos       │     7200 │
+  │       4 │ Ana          │     6100 │
+  └─────────┴──────────────┴──────────┘
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  2 · O QUE O SISTEMA PRECISA FAZER?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  • Adicionar pontos para um jogador
+  • Consultar os primeiros colocados
+  • Descobrir a posição de um jogador
+  • Consultar a pontuação de um jogador
+  • Obter jogadores entre determinadas posições
+  • Atualizar o ranking frequentemente
+
+É exatamente nesse cenário que o Redis Sorted Set se encaixa muito bem.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  3 · POR QUE USAR UM SORTED SET?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+O Redis mantém os elementos ordenados pelo score e reposiciona cada jogador
+automaticamente quando sua pontuação muda.
+
+Um SET comum não serve para esse caso porque não possui ordenação por
+pontuação.
+
+A grande vantagem é que o Redis não precisa buscar todos os usuários para
+depois ordená-los. O ZSET já mantém os membros e seus scores em uma estrutura
+ordenada.
+
+Usos comuns:
+
+  • Rankings em tempo real
+  • Métricas ordenadas por pontuação
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  4 · COMANDOS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ┌───────────────────────────────────────────────┬───────────────────────────┐
+  │ Comando                                       │ Finalidade                │
+  ├───────────────────────────────────────────────┼───────────────────────────┤
+  │ ZADD leaderboard 1000 leandro                 │ Adicionar ou atualizar    │
+  │ ZREVRANGE leaderboard 0 9 WITHSCORES          │ Obter o Top 10            │
+  │ ZREVRANK leaderboard leandro                  │ Consultar a posição       │
+  │ ZSCORE leaderboard leandro                    │ Consultar a pontuação     │
+  └───────────────────────────────────────────────┴───────────────────────────┘
+
+Observação: ZREVRANK começa na posição 0. Portanto, o retorno 0 representa
+o primeiro colocado.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  5 · CONCEITO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+                            REDIS
+                              │
+                              ▼
+                       ┌─────────────┐
+                       │ Sorted Set  │
+                       └──────┬──────┘
+                              │
+                   ┌──────────┴──────────┐
+                   ▼                     ▼
+                member                 score
+                   │                     │
+           ┌───────┼───────┐     ┌──────┼──────┐
+           ▼       ▼       ▼     ▼      ▼      ▼
+         "joao" "maria" "carlos" 9800   8500   7200

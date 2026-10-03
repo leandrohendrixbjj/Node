@@ -1,0 +1,71 @@
+1. O que é o BRPOP?
+   - Ele remove e retorna o último elemento de uma lista. A diferença importante é que, se a lista estiver vazia, o Redis pode ficar 
+     aguardando até que apareça um item.
+
+   - BRPOP minha-fila 0 => O 0 significa: espere indefinidamente.
+   
+   - Imagine: o Redis retorna: "ticket3"
+
+      fila: tickets
+      ┌─────────┬─────────┬─────────┐
+      │ ticket1 │ ticket2 │ ticket3 │
+      └─────────┴─────────┴─────────┘
+                                    ↑
+                                  direita  
+                                  
+2. Por que o BRPOP é interessante para workers?
+
+  - O worker está permanentemente esperando
+  - Quando o ticket-100 aparece, o Redis libera o BRPOP e entrega o ticket ao worker.
+
+  Com Lpop fazendo polling:   
+
+    LPOP
+    ↓
+    vazio
+    ↓
+    espera 1s
+    ↓
+    LPOP
+    ↓
+    vazio
+    ↓
+    espera 1s
+
+ Com BRPOP:
+   - O Redis mantém a conexão aguardando sem você ficar consultando repetidamente a fila. 
+
+    BRPOP
+      │
+      │ bloqueado
+      │
+      │ ticket chegou
+      ▼
+    processa   
+
+
+3. E se o worker pegar o ticket e morrer antes de processá-lo? 
+  - Com BRPOP, o item pode ser perdido.
+  - É justamente aí que começam a aparecer alternativas como: BRPOP vs BRPOPLPUSH
+
+4. BRPOPLPUSH
+
+ - A ideia é justamente criar uma segunda lista.
+ - Permite criar uma fila de processamento, mas NÃO recupera automaticamente o item só porque o worker morreu.
+ - O Redis faz atomicamente:
+    1.Remove o item de tickets
+    2.Coloca o item em tickets:processing
+    3.Retorna o item para o worker
+
+    fila principal                 fila de processamento
+          │                                │
+          ▼                                ▼
+    ┌──────────────┐              ┌──────────────────┐
+    │ ticket-101   │              │ ticket-100       │
+    │ ticket-102   │              │ ticket-99        │
+    │ ticket-103   │              └──────────────────┘
+    └──────────────┘
+          │
+          │ BRPOPLPUSH
+          ▼
+        Worker

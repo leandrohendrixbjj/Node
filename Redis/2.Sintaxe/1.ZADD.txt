@@ -1,0 +1,54 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                              REDIS · ZADD                                    ║
+║                  membros e pontuações em um Sorted Set                       ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  1 · O QUE É O ZADD?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ZADD adiciona um membro a um Sorted Set (ZSET) e associa uma pontuação
+(score) a ele.
+
+É a base para implementar leaderboards, rankings, filas ordenadas por
+prioridade e outros casos que dependem de pontuação.
+
+Sintaxe:
+
+  ZADD <key> <score> <member>
+
+Exemplos:
+
+  ┌──────────────────────────────────────┬─────────────────────────────────┐
+  │ Comando                              │ Resultado                       │
+  ├──────────────────────────────────────┼─────────────────────────────────┤
+  │ ZADD leaderboard 1500 "leandro"      │ Leandro recebe 1500 pontos      │
+  │ ZADD leaderboard 1800 "joao"         │ João recebe 1800 pontos         │
+  │ ZADD leaderboard 1200 "maria"        │ Maria recebe 1200 pontos        │
+  └──────────────────────────────────────┴─────────────────────────────────┘
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  2 · RECUPERANDO O RANKING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Do maior score para o menor:
+
+  ZREVRANGE leaderboard 0 -1
+
+Incluindo os scores no resultado:
+
+  ZREVRANGE leaderboard 0 -1 WITHSCORES
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  3 · INCREMENTANDO A PONTUAÇÃO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ZINCRBY incrementa o score atual de um membro:
+
+  ZINCRBY leaderboard 100 "leandro"
+
+Se Leandro tinha 1500 pontos, passa a ter 1600. O Redis atualiza sua posição
+no ranking automaticamente.
