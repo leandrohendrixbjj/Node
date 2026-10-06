@@ -1,0 +1,48 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                              REDIS · HSET                                    ║
+║                    um objeto com vários campos numa chave                    ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  1 · O QUE É HSET?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Pense no HSET como um objeto, ou dicionário, armazenado dentro de uma chave
+Redis. É diferente de SET.
+
+  HSET user:1 name "Leandro" age 42 city "São Paulo"
+
+Isso cria um Hash chamado user:1:
+
+  user:1
+  ├── name  →  "Leandro"
+  ├── age   →  "42"
+  └── city  →  "São Paulo"
+
+Há uma chave Redis contendo vários campos.
+
+  ┌────────────────────────────────────┬────────────────────────────────────┐
+  │ Comando                            │ Efeito                             │
+  ├────────────────────────────────────┼────────────────────────────────────┤
+  │ HSET user:1 name "Soares"          │ Altera só o campo name             │
+  │ HGET user:1 name                   │ Recupera só o valor de name        │
+  └────────────────────────────────────┴────────────────────────────────────┘
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  2 · HSET É DIFERENTE DE SET
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  SET  user:1 '{"name":"Leandro","age":42}'
+  HSET user:1 name "Leandro" age 42
+
+No primeiro caso, o Redis enxerga uma string.
+No segundo, o Redis enxerga um Hash.
+
+  ┌────────────────────────────────────┬────────────────────────────────────┐
+  │ Operação no HSET                   │ Retorno                            │
+  ├────────────────────────────────────┼────────────────────────────────────┤
+  │ Campo criado                       │ (integer) 1                        │
+  │ Campo atualizado                   │ (integer) 0                        │
+  └────────────────────────────────────┴────────────────────────────────────┘
