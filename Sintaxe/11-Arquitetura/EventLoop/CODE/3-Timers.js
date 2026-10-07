@@ -1,3 +1,5 @@
+console.clear();
+
 console.log('1. Antes do setTimeout');
 
 setTimeout(() => {

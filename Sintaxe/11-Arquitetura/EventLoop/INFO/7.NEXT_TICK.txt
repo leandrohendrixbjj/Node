@@ -1,0 +1,68 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                          EVENT LOOP · NEXT TICK                              ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  1 · PROCESS.NEXTTICK
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+- Possui uma fila própria. Essa fila é processada antes de o Event Loop avançar para a próxima fase.
+- Essa fila é uma particularidade do ambiende nodeJS. Ela não exsite no javascript
+
+  console.log('1');                 // 1º  síncrono
+
+  setTimeout(() => {
+    console.log('2');               // 4º  fase de timers
+  }, 0);
+
+  process.nextTick(() => {
+    console.log('3');               // 3º  fila do nextTick
+  });
+
+  console.log('4');                 // 2º  síncrono
+
+Saída:
+
+  1
+  4
+  3
+  2
+
+De forma simplificada, a ordem é:
+
+    Código síncrono
+          │
+          ▼
+    nextTick Queue
+          │
+          ▼
+    Microtasks (Promise)
+          │
+          ▼
+    Event Loop
+          │
+          ├── timers
+          ├── ...
+          ├── poll
+          └── check
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  2 · PROMISES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+process.nextTick tem prioridade sobre as Promises: Isso acontece porque o Node processa primeiro a fila de nextTick e 
+depois a fila de microtasks.
+
+  process.nextTick(() => {
+    console.log('nextTick');        // 1º
+  });
+
+  Promise.resolve().then(() => {
+    console.log('Promise');         // 2º
+  });
+
+Saída:
+
+  nextTick
+  Promise

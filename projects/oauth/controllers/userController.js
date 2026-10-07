@@ -56,7 +56,7 @@ exports.login = async (req, res, next) => {
          *   s%3AslRWLSkWhEQIUUqqmNbGOxokkbtg6ofw.Y2c%2FJq2pgtsY2L6dcD7O8jT4dIn4Znfm6zNu1KS%2BqGg
          *
          * Partes:
-         *   s%3A
+         *     s%3A
          *     Prefixo fixo. Decodificado, é "s:".
          *
          *   slRWLSkWhEQIUUqqmNbGOxokkbtg6ofw

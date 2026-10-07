@@ -1,0 +1,74 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                          REDIS · BRPOPLPUSH                                  ║
+║              pendente, processando e a volta quando o worker morre           ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  1 · TRÊS ESTADOS LÓGICOS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Com BRPOPLPUSH / BLMOVE, a fila costuma ter três estados:
+
+  • Pendente      → ainda não foi processado
+  • Processando   → o worker já leu e está executando
+  • Processado    → o worker já concluiu
+
+                ┌─────────────────┐
+                │    PENDENTES    │
+                │   aguardando    │
+                └────────┬────────┘
+                         │
+                    BRPOPLPUSH
+                         │
+                         ▼
+                ┌─────────────────┐
+                │   PROCESSANDO   │
+                │   em execução   │
+                └────────┬────────┘
+                         │
+                   processamento
+                         │
+                         ▼
+                ┌─────────────────┐
+                │   PROCESSADOS   │
+                │    concluídos   │
+                └─────────────────┘
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  2 · E SE O WORKER MORRER?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+O item saiu da fila principal, mas não foi confirmado como concluído.
+Um BLMOVE devolve esse item para a fila de pendentes. Outro worker
+pode processá-lo.
+
+                  processing
+                      │
+                      │  worker morreu
+                      ▼
+                    BLMOVE
+                      │
+                      ▼
+                   pending
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  3 · FLUXO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+                    PENDENTES
+                        │
+                        │  BRPOPLPUSH / BLMOVE
+                        ▼
+                   PROCESSANDO
+                        │
+            ┌───────────┴───────────┐
+            │                       │
+            │ worker terminou       │ worker morreu
+            ▼                       ▼
+       PROCESSADOS              recovery
+                                    │
+                                    ▼
+                                PENDENTES

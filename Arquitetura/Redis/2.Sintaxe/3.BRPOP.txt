@@ -1,0 +1,104 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                             REDIS · BRPOP                                    ║
+║                  remove da direita e espera se a fila estiver vazia          ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  1 · O QUE É O BRPOP?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+BRPOP remove e retorna o último elemento de uma lista, o item da direita.
+Se a lista estiver vazia, o Redis pode ficar aguardando até que apareça
+um item.
+
+  BRPOP minha-fila 0
+
+O 0 significa: espere indefinidamente.
+
+Imagine que o Redis retorna "ticket3":
+
+                         fila: tickets
+
+              ┌───────────┬───────────┬───────────┐
+              │  ticket1  │  ticket2  │  ticket3  │
+              └───────────┴───────────┴───────────┘
+              esquerda                      direita
+                                                ▲
+                                                │
+                                              BRPOP
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  2 · POR QUE O BRPOP É INTERESSANTE PARA WORKERS?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+O worker fica permanentemente esperando. Quando o ticket-100 aparece, o
+Redis libera o BRPOP e entrega o ticket ao worker.
+
+Com LPOP, o worker faz polling:
+
+                    LPOP
+                     │
+                     ▼
+                   vazio
+                     │
+                     ▼
+                 espera 1s
+                     │
+                     ▼
+                    LPOP
+                     │
+                     ▼
+                   vazio
+                     │
+                     ▼
+                 espera 1s
+
+Com BRPOP, o Redis mantém a conexão aguardando. Não é preciso consultar
+a fila de novo e de novo:
+
+                    BRPOP
+                      │
+                      │  bloqueado
+                      │
+                      │  ticket chegou
+                      ▼
+                   processa
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  3 · E SE O WORKER MORRER ANTES DE PROCESSAR?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Com BRPOP, o item pode ser perdido. Ele já saiu da fila e o worker morreu
+antes de terminar.
+
+É aí que entra a comparação entre BRPOP e BRPOPLPUSH.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  4 · BRPOPLPUSH
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A ideia é criar uma segunda lista. Isso monta uma fila de processamento,
+mas não recupera o item automaticamente só porque o worker morreu.
+
+O Redis faz, de forma atômica:
+
+  1. Remove o item de tickets
+  2. Coloca o item em tickets:processing
+  3. Retorna o item para o worker
+
+        fila principal                      fila de processamento
+              │                                      │
+              ▼                                      ▼
+      ┌──────────────────┐                  ┌──────────────────┐
+      │ ticket-101       │                  │ ticket-100       │
+      │ ticket-102       │                  │ ticket-99        │
+      │ ticket-103       │                  └──────────────────┘
+      └──────────────────┘
+              │
+              │  BRPOPLPUSH
+              ▼
+           Worker
