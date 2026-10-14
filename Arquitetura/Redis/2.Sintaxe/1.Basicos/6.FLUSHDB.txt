@@ -1,0 +1,15 @@
+1. O que faz o FLUSHDB?
+  - remove todas as chaves do banco Redis.
+
+2. FLUSHDB x FLUSHALL   
+  - FLUSHDB: apaga todas as chaves,  somente do DB selecionado. SELECT 2 FLUSHDB.
+
+  - FLUSHALL: apaga todas as chaves, de todos os DBs.
+
+
+3. E existe FLUSHDB ASYNC
+   - No ASYNC, o trabalho pesado de liberar a memória dos objetos é feito de maneira assíncrona, reduzindo o risco 
+     de bloquear o processamento por muito tempo quando existem muitas chaves.
+   
+
+  
