@@ -1,18 +1,25 @@
+'use strict'
+
+/**
+ * NULL
+ * 
+ * Null é um tipo primitivo do JavaScript que representa a AUSÊNCIA INTENCIONAL de valor —
+ * ou seja, informa que uma variável "não tem valor nenhum" de propósito.
+ * 
+ * Tabela comparativa: null vs. undefined
+ *
+ * ╔══════════════════════════════════════╦══════════════════════════════════════╗
+ * ║ null                                ║ undefined                           ║
+ * ╠══════════════════════════════════════╬══════════════════════════════════════╣
+ * ║ Ausência intencional                ║ Variável não definida                ║
+ * ║ Definido manualmente                ║ Gerado automaticamente pelo JS       ║
+ * ║ "Vazio consciente"                  ║ "Ainda não existe"                   ║
+ * ║ Vira 0 em operações aritméticas     ║ Vira NaN em operações aritméticas    ║
+ * ╚══════════════════════════════════════╩══════════════════════════════════════╝
+ * 
+ */
+
 console.clear()
-
-/* 
-  Null é um tipo primitivo que ausência intencional de valor. Indica que uma variável não tem valor.
-
-  | null                          | undefined                     |
-  | ----------------------------- | ----------------------------- |
-  | Ausência intencional          | Variável não definida         |
-  | Definido manualmente          | Automático do JS              |
-  | Representa “vazio consciente” | Representa “não existe ainda” |
-  | É convertido implicitamente para 0 em operações aritméticas.  |
-  | Undefined em operações aritméticas é convertido para NaN. |
-
-
-*/
 
 console.log(typeof null) // object (bug do JavaScript)
 

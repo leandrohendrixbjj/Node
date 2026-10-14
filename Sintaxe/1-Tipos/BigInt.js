@@ -1,9 +1,19 @@
-console.clear()
-/* 
-  BigInt é um tipo nativo do JavaScript para representar inteiros arbitrariamente grandes, 
-  sem limite de precisão. Usando n no final
-*/
+'use strict'
 
+/*
+ * BIGINT
+ *
+ * Tipo nativo do JavaScript para inteiros arbitrariamente grandes,
+ * sem limite de precisão.
+ *
+ * O sufixo n marca um literal BigInt:
+ *
+ *   9007199254740991n
+ */
+
+console.clear()
+
+// Literal BigInt
 const numeroGrande = BigInt("9007199254740991123123123123")
 const tipo = typeof numeroGrande
 console.log("O tipo da variável numeroGrande é:", tipo)

@@ -1,33 +1,43 @@
+"use strict"
+
+/**
+ * ────────────────────────────────────────────────
+ *   💡 CONST: Escopo em JavaScript
+ * ────────────────────────────────────────────────
+ *
+ * • Ao declarar uma variável com `const`, ela pertence ao BLOCO onde foi declarada,
+ *   mesmo que esteja dentro de um if, for ou outro bloco.
+ *
+ * • Use `const` quando precisar declarar uma variável que não será alterada.
+ *
+ */
+
 console.clear()
 
-/*
-  const → padrão
-  let → quando precisa mudar valor
-  var → evitar
-*/
 
-// CONST: Quando você declara uma variável com const, ela não pode ser alterada.   
 const data = 'John Doe'
 
+// Não pode alterar o valor da variável
 try {
   data = 'Jane Doe'  
 } catch (error) {
-  console.log('Erro', error.stack)
+  console.log("Não pode alterar o valor da variável")
 }
 
 
-// CONST: Não vaza o escopo.
+// Não vaza o escopo
 function info(){
   if (true){
     const age = 30
+    console.log('Age:', age)
   }
-  console.log('Data', age)
+  console.log('Não acessa o escopo', age)
 }
 
 try {
   info()  
 } catch (error) {
-  console.log('Erro', error.stack)
+  console.log("Const: Não vaza o escopo")
 }
 
 

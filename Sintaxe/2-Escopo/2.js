@@ -1,20 +1,30 @@
+"use strict"
+
+/**
+ * ────────────────────────────────────────────────
+ *   💡 LET: Escopo em JavaScript
+ * ────────────────────────────────────────────────
+ *
+ * • Ao declarar uma variável com `let`, ela pertence ao BLOCO onde foi declarada,
+ *   mesmo que esteja dentro de um if, for ou outro bloco.
+ *
+ * • Use `let` quando precisar mudar o valor da variável.
+ *
+ */
+
 console.clear()
-
-/* 
-  LET: Quando você declara uma variável com let, ela pertence ao bloco onde foi declarada.   
-  mesmo que esteja dentro de if, for ou outro bloco.
-
-  let → quando precisa mudar valor  
-*/
 
 function data(){  
 
   try {
-    if (true){
-      let info = 'teste'
+    for(let row = 0; row < 5; row++){    
+      console.log(row)
     }
-    console.log('Vaza escopo', info)  
+    
+    row = 10 // Erro: row is not defined
+    
   } catch (error) {    
+    console.log("Não vaza escopo")
     console.log('Erro', error.stack)
   }
   
