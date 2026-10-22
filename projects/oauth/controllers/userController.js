@@ -42,40 +42,29 @@ exports.login = async (req, res, next) => {
     const user = new User({ email, password });
 
     try {
+        // Validar o password e o email
         const validatedUser = await user.validateCredentials();
 
         /*
-         * CONNECT.SID
-         *
-         * req.session.regenerate gera um id aleatório.
-         * Exemplo: U4nYs10k6KPkBtU6ZsMtBPadACKPRTI
-         *
-         * O cookie connect.sid guarda esse id junto com uma assinatura.
-         * No Chrome o valor aparece codificado:
-         *
-         *   s%3AslRWLSkWhEQIUUqqmNbGOxokkbtg6ofw.Y2c%2FJq2pgtsY2L6dcD7O8jT4dIn4Znfm6zNu1KS%2BqGg
-         *
-         * Partes:
-         *     s%3A
-         *     Prefixo fixo. Decodificado, é "s:".
-         *
-         *   slRWLSkWhEQIUUqqmNbGOxokkbtg6ofw
-         *     Id da sessão. É aleatório e é o _id gravado no Mongo.
-         *
-         *   Y2c%2FJq2pgtsY2L6dcD7O8jT4dIn4Znfm6zNu1KS%2BqGg
-         *     Assinatura desse id, calculada com SESSION_SECRET.
+         * req.session.regenerate
+             - Será encontrato COOKIE_NAME => CONNECT.SID
+             - Gera uma hash que é composta por:
+                - Valor fixo:s%3A
+                - Id da sessão => slRWLSkWhEQIUUqqmNbGOxokkbtg6ofw ( gerado aleatoriamente e gravado no Mongo)
+                - Assinatura calculada com SESSION_SECRET => Y2c%2FJq2pgtsY2L6dcD7O8jT4dIn4Znfm6zNu1KS%2BqGg         
          */
         req.session.regenerate((err) => {
             if (err) {
                 return next(err);
             }
-            // 2. Grava req.session.user com username e email.
+
+            // Grava o objeto req.session.user com username e email.
             req.session.user = {
                 username: validatedUser.username,
                 email: validatedUser.email
             };
 
-            // req.session.save persiste esse objeto na coleção sessions, com esse id como _id.
+            // req.session.save persiste o objeto req.session.user na coleção sessions, com o id da sessão como _id.
             req.session.save((saveErr) => {
                 if (saveErr) {
                     return next(saveErr);

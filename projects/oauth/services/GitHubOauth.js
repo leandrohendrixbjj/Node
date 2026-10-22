@@ -12,14 +12,14 @@ passport.deserializeUser(function (obj, done) {
   done(null, obj)
 })
 
-// código omitido
-
 passport.use(new GitHubStrategy({
   clientID: process.env.GITHUB_CLIENT_ID,
   clientSecret: process.env.GITHUB_CLIENT_SECRET,
   callbackURL: "http://localhost:3000/auth/github/callback"
 },
+// Strategy function
 function(accessToken, refreshToken, profile, done) {
+  console.log(profile)
   return done(null, profile.id);  
 }
 ));
